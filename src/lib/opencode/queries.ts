@@ -27,12 +27,16 @@ export function useHealthQuery() {
   return useQuery({
     queryKey: queryKeys.health,
     queryFn: async () => {
-      const client = getOpencodeClient()
-      const result = await client.global.health()
-      return result.data
+      try {
+        const client = getOpencodeClient()
+        const result = await client.global.health()
+        return result.data ?? null
+      } catch {
+        return null
+      }
     },
     refetchInterval: 30000,
-    retry: 1,
+    retry: false,
   })
 }
 
@@ -41,10 +45,15 @@ export function useProjectsQuery() {
   return useQuery({
     queryKey: queryKeys.projects,
     queryFn: async () => {
-      const client = getOpencodeClient()
-      const result = await client.project.list()
-      return result.data ?? []
+      try {
+        const client = getOpencodeClient()
+        const result = await client.project.list()
+        return result.data ?? []
+      } catch {
+        return []
+      }
     },
+    retry: false,
   })
 }
 
@@ -54,11 +63,16 @@ export function useSessionsQuery(directory: string | undefined) {
     queryKey: queryKeys.sessions(directory ?? ''),
     queryFn: async () => {
       if (!directory) return []
-      const client = createDirectoryClient(directory)
-      const result = await client.session.list()
-      return result.data ?? []
+      try {
+        const client = createDirectoryClient(directory)
+        const result = await client.session.list()
+        return result.data ?? []
+      } catch {
+        return []
+      }
     },
     enabled: !!directory,
+    retry: false,
   })
 }
 
@@ -68,11 +82,16 @@ export function useSessionQuery(sessionId: string | undefined) {
     queryKey: queryKeys.session(sessionId ?? ''),
     queryFn: async () => {
       if (!sessionId) return null
-      const client = getOpencodeClient()
-      const result = await client.session.get({ sessionID: sessionId })
-      return result.data
+      try {
+        const client = getOpencodeClient()
+        const result = await client.session.get({ sessionID: sessionId })
+        return result.data ?? null
+      } catch {
+        return null
+      }
     },
     enabled: !!sessionId,
+    retry: false,
   })
 }
 
@@ -82,11 +101,16 @@ export function useMessagesQuery(sessionId: string | undefined) {
     queryKey: queryKeys.messages(sessionId ?? ''),
     queryFn: async () => {
       if (!sessionId) return []
-      const client = getOpencodeClient()
-      const result = await client.session.messages({ sessionID: sessionId, limit: 1000 })
-      return result.data ?? []
+      try {
+        const client = getOpencodeClient()
+        const result = await client.session.messages({ sessionID: sessionId, limit: 1000 })
+        return result.data ?? []
+      } catch {
+        return []
+      }
     },
     enabled: !!sessionId,
+    retry: false,
   })
 }
 
@@ -96,11 +120,16 @@ export function useDiffQuery(sessionId: string | undefined) {
     queryKey: queryKeys.diff(sessionId ?? ''),
     queryFn: async () => {
       if (!sessionId) return []
-      const client = getOpencodeClient()
-      const result = await client.session.diff({ sessionID: sessionId })
-      return result.data ?? []
+      try {
+        const client = getOpencodeClient()
+        const result = await client.session.diff({ sessionID: sessionId })
+        return result.data ?? []
+      } catch {
+        return []
+      }
     },
     enabled: !!sessionId,
+    retry: false,
   })
 }
 
