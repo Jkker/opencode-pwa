@@ -38,6 +38,9 @@ import {
 } from '@/lib/opencode/queries'
 import type { Message, Part, TextPart, ToolPart } from '@/lib/opencode'
 
+/** Maximum characters to display in tool output preview */
+const TOOL_OUTPUT_MAX_LENGTH = 500
+
 export const Route = createFileRoute('/project/$projectId/session/$sessionId')({
   component: SessionPage,
 })
@@ -274,8 +277,8 @@ function ToolCallItem({ tool }: { tool: ToolPart }) {
       </div>
       {isCompleted && 'output' in state && state.output && (
         <pre className="p-3 text-xs overflow-x-auto max-h-32 overflow-y-auto bg-muted/50">
-          {state.output.slice(0, 500)}
-          {state.output.length > 500 && '...'}
+          {state.output.slice(0, TOOL_OUTPUT_MAX_LENGTH)}
+          {state.output.length > TOOL_OUTPUT_MAX_LENGTH && '...'}
         </pre>
       )}
     </div>
