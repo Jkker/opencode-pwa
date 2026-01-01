@@ -1,4 +1,7 @@
+export { AgentSelector } from './agent-selector'
 export { ChatView } from './chat-view'
 export { Composer } from './composer'
 export { MessageItem } from './message-item'
+export { ServerStatus } from './server-status'
+export { SessionList } from './session-list'
 export { Thread } from './thread'
