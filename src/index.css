@@ -120,11 +120,19 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply font-sans antialiased;
+    /* Mobile-first dynamic viewport height */
+    height: 100dvh;
+  }
   body {
     @apply font-sans bg-background text-foreground;
+    height: 100dvh;
+    overflow: hidden;
   }
-  html {
-    @apply font-sans;
+  #root {
+    height: 100dvh;
+    overflow: hidden;
   }
   .toaster.group {
     --normal-bg: var(--popover);

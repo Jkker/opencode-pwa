@@ -4,9 +4,9 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
-import { AppHeader } from '@/components/layout/app-header'
-import { AppSidebar } from '@/components/layout/app-sidebar'
+import { SessionSidebar } from '@/components/chat/session-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 
 interface RootRouteContext {
@@ -16,16 +16,14 @@ interface RootRouteContext {
 
 export const Route = createRootRouteWithContext<RootRouteContext>()({
   component: () => (
-    <>
+    <TooltipProvider>
       <SidebarProvider
         style={{
-          '--sidebar-width': 'calc(var(--spacing) * 56)',
-          '--header-height': 'calc(var(--spacing) * 12)',
+          '--sidebar-width': 'calc(var(--spacing) * 64)',
         }}
       >
-        <AppSidebar />
-        <SidebarInset className="min-h-screen">
-          <AppHeader />
+        <SessionSidebar />
+        <SidebarInset className="h-dvh overflow-hidden">
           <Outlet />
         </SidebarInset>
       </SidebarProvider>
@@ -45,6 +43,6 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
           },
         ]}
       />
-    </>
+    </TooltipProvider>
   ),
 })
