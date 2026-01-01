@@ -1,0 +1,29 @@
+{
+  "name": "OpenCode",
+  "short_name": "OpenCode",
+  "description": "AI-powered coding assistant for your development workflow",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "any",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["developer", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "New Session",
+      "short_name": "New",
+      "description": "Start a new coding session",
+      "url": "/",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "any" }]
+    }
+  ]
+}

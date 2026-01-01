@@ -9,74 +9,81 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteRouteImport } from './routes/app.route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppChildrenRouteRouteImport } from './routes/app.childrenRoute'
-import { Route as DeepNestedRouteRouteImport } from './routes/deep.nested.route'
+import { Route as ProjectProjectIdRouteImport } from './routes/project/$projectId'
+import { Route as ProjectProjectIdSessionIndexRouteImport } from './routes/project/$projectId/session/index'
+import { Route as ProjectProjectIdSessionSessionIdRouteImport } from './routes/project/$projectId/session/$sessionId'
 
-const AppRouteRoute = AppRouteRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppChildrenRouteRoute = AppChildrenRouteRouteImport.update({
-  id: '/childrenRoute',
-  path: '/childrenRoute',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const DeepNestedRouteRoute = DeepNestedRouteRouteImport.update({
-  id: '/deep/nested',
-  path: '/deep/nested',
+const ProjectProjectIdRoute = ProjectProjectIdRouteImport.update({
+  id: '/project/$projectId',
+  path: '/project/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectProjectIdSessionIndexRoute =
+  ProjectProjectIdSessionIndexRouteImport.update({
+    id: '/session/',
+    path: '/session/',
+    getParentRoute: () => ProjectProjectIdRoute,
+  } as any)
+const ProjectProjectIdSessionSessionIdRoute =
+  ProjectProjectIdSessionSessionIdRouteImport.update({
+    id: '/session/$sessionId',
+    path: '/session/$sessionId',
+    getParentRoute: () => ProjectProjectIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteRouteWithChildren
-  '/deep/nested': typeof DeepNestedRouteRoute
-  '/app/childrenRoute': typeof AppChildrenRouteRoute
+  '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
+  '/project/$projectId/session/$sessionId': typeof ProjectProjectIdSessionSessionIdRoute
+  '/project/$projectId/session': typeof ProjectProjectIdSessionIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteRouteWithChildren
-  '/deep/nested': typeof DeepNestedRouteRoute
-  '/app/childrenRoute': typeof AppChildrenRouteRoute
+  '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
+  '/project/$projectId/session/$sessionId': typeof ProjectProjectIdSessionSessionIdRoute
+  '/project/$projectId/session': typeof ProjectProjectIdSessionIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRouteRouteWithChildren
-  '/deep/nested': typeof DeepNestedRouteRoute
-  '/app/childrenRoute': typeof AppChildrenRouteRoute
+  '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
+  '/project/$projectId/session/$sessionId': typeof ProjectProjectIdSessionSessionIdRoute
+  '/project/$projectId/session/': typeof ProjectProjectIdSessionIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/deep/nested' | '/app/childrenRoute'
+  fullPaths:
+    | '/'
+    | '/project/$projectId'
+    | '/project/$projectId/session/$sessionId'
+    | '/project/$projectId/session'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/deep/nested' | '/app/childrenRoute'
-  id: '__root__' | '/' | '/app' | '/deep/nested' | '/app/childrenRoute'
+  to:
+    | '/'
+    | '/project/$projectId'
+    | '/project/$projectId/session/$sessionId'
+    | '/project/$projectId/session'
+  id:
+    | '__root__'
+    | '/'
+    | '/project/$projectId'
+    | '/project/$projectId/session/$sessionId'
+    | '/project/$projectId/session/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRouteRoute: typeof AppRouteRouteWithChildren
-  DeepNestedRouteRoute: typeof DeepNestedRouteRoute
+  ProjectProjectIdRoute: typeof ProjectProjectIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -84,39 +91,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/childrenRoute': {
-      id: '/app/childrenRoute'
-      path: '/childrenRoute'
-      fullPath: '/app/childrenRoute'
-      preLoaderRoute: typeof AppChildrenRouteRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/deep/nested': {
-      id: '/deep/nested'
-      path: '/deep/nested'
-      fullPath: '/deep/nested'
-      preLoaderRoute: typeof DeepNestedRouteRouteImport
+    '/project/$projectId': {
+      id: '/project/$projectId'
+      path: '/project/$projectId'
+      fullPath: '/project/$projectId'
+      preLoaderRoute: typeof ProjectProjectIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/project/$projectId/session/': {
+      id: '/project/$projectId/session/'
+      path: '/session'
+      fullPath: '/project/$projectId/session'
+      preLoaderRoute: typeof ProjectProjectIdSessionIndexRouteImport
+      parentRoute: typeof ProjectProjectIdRoute
+    }
+    '/project/$projectId/session/$sessionId': {
+      id: '/project/$projectId/session/$sessionId'
+      path: '/session/$sessionId'
+      fullPath: '/project/$projectId/session/$sessionId'
+      preLoaderRoute: typeof ProjectProjectIdSessionSessionIdRouteImport
+      parentRoute: typeof ProjectProjectIdRoute
     }
   }
 }
 
-interface AppRouteRouteChildren {
-  AppChildrenRouteRoute: typeof AppChildrenRouteRoute
+interface ProjectProjectIdRouteChildren {
+  ProjectProjectIdSessionSessionIdRoute: typeof ProjectProjectIdSessionSessionIdRoute
+  ProjectProjectIdSessionIndexRoute: typeof ProjectProjectIdSessionIndexRoute
 }
 
-const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppChildrenRouteRoute: AppChildrenRouteRoute,
+const ProjectProjectIdRouteChildren: ProjectProjectIdRouteChildren = {
+  ProjectProjectIdSessionSessionIdRoute: ProjectProjectIdSessionSessionIdRoute,
+  ProjectProjectIdSessionIndexRoute: ProjectProjectIdSessionIndexRoute,
 }
 
-const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
-  AppRouteRouteChildren,
-)
+const ProjectProjectIdRouteWithChildren =
+  ProjectProjectIdRoute._addFileChildren(ProjectProjectIdRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRouteRoute: AppRouteRouteWithChildren,
-  DeepNestedRouteRoute: DeepNestedRouteRoute,
+  ProjectProjectIdRoute: ProjectProjectIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

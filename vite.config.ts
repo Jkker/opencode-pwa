@@ -15,6 +15,7 @@ export const Env = type({
   'VITE_APP_NAME?': 'string',
   VITE_ENABLE_DEBUGGING: 'boolean = false',
   VITE_API_TIMEOUT: '1000 <= number.integer <= 60000 = 5000',
+  'VITE_OPENCODE_SERVER_URL?': 'string.url',
 })
 
 const CI = !!process.env.CI
