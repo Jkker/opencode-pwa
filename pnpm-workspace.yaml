@@ -1,0 +1,10 @@
+catalog:
+  vite: 8.0.0-beta.5
+
+onlyBuiltDependencies:
+  - esbuild
+  - msw
+  - simple-git-hooks
+
+overrides:
+  vite: 'catalog:'

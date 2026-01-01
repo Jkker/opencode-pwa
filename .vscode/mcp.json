@@ -1,0 +1,16 @@
+{
+  "servers": {
+    "playwright": {
+      "command": "pnpm",
+      "args": ["exec", "mcp-server-playwright"]
+    },
+    "context7": {
+      "command": "pnpm",
+      "args": ["exec", "context7-mcp"]
+    },
+    "shadcn": {
+      "command": "shadcn",
+      "args": ["mcp"]
+    }
+  }
+}

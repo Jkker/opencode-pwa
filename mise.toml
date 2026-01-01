@@ -1,0 +1,15 @@
+# Mise configuration for Vite 8 Template
+# Manages Node.js and pnpm versions across all environments
+# See: https://mise.jdx.dev/
+
+[tools.node]
+version = "24" # Node.js 24 LTS
+postinstall = "corepack enable"
+
+[settings]
+experimental = true # This must be enabled to make the hooks work
+
+[env]
+# Add node_modules binaries to PATH
+_.path = ["{{config_root}}/node_modules/.bin"]
+STORYBOOK_DISABLE_TELEMETRY = true

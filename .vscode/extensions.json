@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    "GitHub.copilot", // AI code completion and suggestions for faster prototyping
+    "streetsidesoftware.code-spell-checker", // Spell checking in code, markdown, and comments
+    "usernamehw.errorlens", // Inline highlights for errors/warnings directly in the editor
+    "eamodio.gitlens", // Git blame/history, code authorship, and repository insights
+    "swellaby.workspace-config-plus", // Support .vscode/settings.shared.json for shared workspace settings
+    "hverlin.mise-vscode", // mise support for Visual Studio code (dev-tools, tasks and environment variables)
+    "tombi-toml.tombi", // TOML toolkit: formatting, linting, and language server
+    "christian-kohler.npm-intellisense", // Autocomplete for npm package imports
+    "YoavBls.pretty-ts-errors", // Make TypeScript errors more human-readable
+    "bradlc.vscode-tailwindcss", // Tailwind CSS IntelliSense for class name autocompletion and linting
+    "vitest.explorer", // Vitest test runner integration for running and debugging tests
+    "nrwl.angular-console", // Nx Console: GUI for monorepo tasks and generators
+    "arktypeio.arkdark", // Syntax highlighting and inline errors for ArkType
+    "oxc.oxc-vscode", // oxfmt, oxlint integration for code formatting and linting
+    "prettier.prettier-vscode", // Code formatter for consistent style (fallback)
+    "typescriptteam.native-preview" // Experimental native TypeScript service for better performance
+  ]
+}

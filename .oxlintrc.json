@@ -1,0 +1,132 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["unicorn", "eslint", "typescript", "oxc", "import", "promise", "react", "react-perf"],
+  "categories": {
+    "correctness": "deny",
+    "suspicious": "warn"
+  },
+  "env": {
+    "builtin": true,
+    "es2026": true,
+    "browser": true
+  },
+  "rules": {
+    "no-useless-rename": "warn",
+    "no-var": "deny",
+
+    "react/rules-of-hooks": "deny",
+    "react/exhaustive-deps": "warn",
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-key": "deny",
+    "react/jsx-no-duplicate-props": "deny",
+    "react/no-children-prop": "deny",
+    "react/no-danger-with-children": "deny",
+    "react/self-closing-comp": "warn",
+
+    "import/export": "deny",
+    "import/no-duplicates": "warn",
+    "import/no-empty-named-blocks": "warn",
+    "import/no-cycle": "deny",
+    "import/no-named-default": "warn",
+    "import/namespace": "off",
+    "import/named": "off",
+    "import/default": "off",
+    "import/no-named-as-default-member": "off",
+    "import/no-named-as-default": "off",
+    "import/no-unresolved": "off",
+    "import/no-unassigned-import": "off",
+
+    "eslint/no-unused-vars": "deny",
+
+    "typescript/no-explicit-any": "deny",
+    "typescript/no-unnecessary-type-constraint": "warn",
+    "typescript/no-redundant-type-constituents": "warn",
+    "typescript/no-useless-empty-export": "warn",
+    "typescript/no-extra-non-null-assertion": "deny",
+    "typescript/no-non-null-asserted-optional-chain": "deny",
+    "typescript/prefer-as-const": "warn",
+    "typescript/no-duplicate-enum-values": "deny",
+    "typescript/triple-slash-reference": "deny",
+    "typescript/no-misused-new": "deny",
+    "typescript/no-this-alias": "warn",
+    "typescript/no-unsafe-declaration-merging": "deny",
+    "typescript/await-thenable": "deny",
+    "typescript/no-floating-promises": "deny",
+    "typescript/no-for-in-array": "deny",
+    "typescript/no-implied-eval": "deny",
+    "typescript/no-base-to-string": "warn",
+    "typescript/restrict-template-expressions": "warn",
+    "typescript/unbound-method": "warn",
+
+    "no-unused-vars": [
+      "warn",
+      {
+        "args": "after-used",
+        "argsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
+
+    "unicorn/no-array-for-each": "warn",
+    "unicorn/prefer-array-find": "warn",
+
+    "promise/param-names": "deny",
+    "promise/no-new-statics": "deny",
+    "promise/valid-params": "deny"
+  },
+  "settings": {
+    "jsx-a11y": {
+      "polymorphicPropName": null,
+      "components": {},
+      "attributes": {}
+    },
+    "react": {
+      "formComponents": [],
+      "linkComponents": ["Link"],
+      "version": "19.2"
+    },
+    "vitest": {
+      "typecheck": true
+    }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.{test,spec}.*"],
+      "plugins": ["vitest"],
+      "rules": {
+        "typescript/no-explicit-any": "off",
+        "typescript/no-unsafe-argument": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-return": "off"
+      }
+    },
+    {
+      "files": ["**/components/ui/**/*.{ts,tsx}", "**/lib/**/*.{ts,tsx}"],
+      "rules": {
+        "react/only-export-components": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "public",
+    "tmp",
+    "dist",
+    "build",
+    "node_modules",
+    ".turbo",
+    ".tanstack",
+    "storybook-static",
+    "**/routeTree.gen.ts"
+  ]
+}

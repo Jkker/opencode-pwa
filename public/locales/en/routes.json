@@ -1,0 +1,8 @@
+{
+  "/": "Home",
+  "/app": "App",
+  "/settings": "Settings",
+  "/app/childrenRoute": "App Children",
+  "/deep/nested": "Deep Nested Route",
+  "/examples": "Examples"
+}
