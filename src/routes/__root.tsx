@@ -4,10 +4,10 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TooltipProvider } from '@/components/ui/tooltip'
 
 import { SessionSidebar } from '@/components/chat/session-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 interface RootRouteContext {
   queryClient: QueryClient

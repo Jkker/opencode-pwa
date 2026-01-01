@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+
 import { getOpencodeClient } from './client'
 
 interface ServerState {
@@ -49,6 +50,6 @@ export const useServerStore = create<ServerStore>()(
     {
       name: 'opencode-server',
       partialize: (state) => ({ url: state.url }),
-    }
-  )
+    },
+  ),
 )

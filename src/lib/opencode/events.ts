@@ -1,13 +1,14 @@
 /**
  * Real-time event subscription hook for OpenCode SDK.
  * Uses Server-Sent Events to receive live updates.
- * 
+ *
  * Note: SSE subscription is handled differently in the SDK.
  * This is a simplified placeholder that will need to be updated
  * based on the actual SDK's event stream implementation.
  */
-import { useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useCallback } from 'react'
+
 import { queryKeys } from './queries'
 
 interface EventCallbacks {
@@ -21,10 +22,7 @@ interface EventCallbacks {
  * Hook for subscribing to OpenCode events for a specific directory.
  * Currently uses polling as a fallback until SSE is properly integrated.
  */
-export function useOpencodeEvents(
-  directory: string | undefined,
-  _callbacks?: EventCallbacks
-) {
+export function useOpencodeEvents(directory: string | undefined, _callbacks?: EventCallbacks) {
   const queryClient = useQueryClient()
 
   // Memoize the refetch function

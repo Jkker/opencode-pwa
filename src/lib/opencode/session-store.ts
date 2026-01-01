@@ -2,8 +2,9 @@
  * OpenCode session store using Zustand.
  * Manages sessions, messages, and real-time sync.
  */
-import { create } from 'zustand'
 import type { Session, Message, Part } from '@opencode-ai/sdk/v2/client'
+
+import { create } from 'zustand'
 
 interface SessionState {
   sessions: Map<string, Session>
@@ -14,10 +15,7 @@ interface SessionState {
   currentSessionId: string | null
 }
 
-type SessionStatus = 
-  | { type: 'idle' }
-  | { type: 'busy' }
-  | { type: 'retry'; attempt: number }
+type SessionStatus = { type: 'idle' } | { type: 'busy' } | { type: 'retry'; attempt: number }
 
 interface SessionActions {
   setSessions: (projectId: string, sessions: Session[]) => void
@@ -47,12 +45,12 @@ export const useSessionStore = create<SessionStore>()((set, _get) => ({
     set((state) => {
       const newSessions = new Map(state.sessions)
       const newByProject = new Map(state.sessionsByProject)
-      
+
       for (const session of sessions) {
         newSessions.set(session.id, session)
       }
       newByProject.set(projectId, sessions)
-      
+
       return { sessions: newSessions, sessionsByProject: newByProject }
     }),
 
@@ -67,9 +65,9 @@ export const useSessionStore = create<SessionStore>()((set, _get) => ({
     set((state) => {
       const newSessions = new Map(state.sessions)
       newSessions.delete(sessionId)
-      return { 
+      return {
         sessions: newSessions,
-        currentSessionId: state.currentSessionId === sessionId ? null : state.currentSessionId
+        currentSessionId: state.currentSessionId === sessionId ? null : state.currentSessionId,
       }
     }),
 
@@ -128,6 +126,5 @@ export const useSessionStore = create<SessionStore>()((set, _get) => ({
       return { sessionStatus: newStatus }
     }),
 
-  setCurrentSession: (sessionId) =>
-    set({ currentSessionId: sessionId }),
+  setCurrentSession: (sessionId) => set({ currentSessionId: sessionId }),
 }))

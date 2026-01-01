@@ -3,15 +3,12 @@
  * Shows projects and their sessions in a collapsible tree.
  */
 import { Link, useParams } from '@tanstack/react-router'
-import { 
-  Folder, 
-  MessageSquare, 
-  Plus, 
-  ChevronRight,
-  Settings,
-  Server,
-} from 'lucide-react'
+import { Folder, MessageSquare, Plus, ChevronRight, Settings, Server } from 'lucide-react'
 
+import type { Project, Session } from '@/lib/opencode'
+
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -25,12 +22,9 @@ import {
   SidebarMenuSubItem,
   SidebarSeparator,
 } from '@/components/ui/sidebar'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
 import { useProjectsQuery, useSessionsQuery, useHealthQuery } from '@/lib/opencode/queries'
-import type { Project, Session } from '@/lib/opencode'
+import { cn } from '@/lib/utils'
 
 function getProjectName(project: Project): string {
   if (project.name) return project.name
@@ -69,24 +63,27 @@ interface ProjectItemProps {
 function ProjectItem({ project }: ProjectItemProps) {
   const params = useParams({ strict: false })
   const { data: sessions, isLoading } = useSessionsQuery(project.worktree)
-  
+
   const currentProjectId = params.projectId
   const currentSessionId = params.sessionId
   const isCurrentProject = currentProjectId === encodeURIComponent(project.worktree)
   const name = getProjectName(project)
 
-  const sortedSessions = sessions?.toSorted((a, b) => {
-    const aTime = a.time.updated ?? a.time.created
-    const bTime = b.time.updated ?? b.time.created
-    return bTime - aTime
-  }).slice(0, 10) ?? []
+  const sortedSessions =
+    sessions
+      ?.toSorted((a, b) => {
+        const aTime = a.time.updated ?? a.time.created
+        const bTime = b.time.updated ?? b.time.created
+        return bTime - aTime
+      })
+      .slice(0, 10) ?? []
 
   return (
     <SidebarMenuItem>
       <button
         className={cn(
           'flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-sidebar-accent',
-          isCurrentProject && 'bg-sidebar-accent'
+          isCurrentProject && 'bg-sidebar-accent',
         )}
       >
         <div className="flex items-center gap-2">
@@ -99,7 +96,7 @@ function ProjectItem({ project }: ProjectItemProps) {
         </div>
         <ChevronRight className="size-4 text-muted-foreground" />
       </button>
-      
+
       <SidebarMenuSub>
         <SidebarMenuSubItem>
           <Link
@@ -142,14 +139,14 @@ interface SessionItemProps {
 
 function SessionItem({ session, projectId, isActive }: SessionItemProps) {
   const relativeTime = formatRelativeTime(session.time.updated ?? session.time.created)
-  
+
   return (
     <SidebarMenuSubItem>
       <Link
         to={`/project/${encodeURIComponent(projectId)}/session/${session.id}`}
         className={cn(
           'flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-sidebar-accent',
-          isActive && 'bg-sidebar-accent text-sidebar-accent-foreground'
+          isActive && 'bg-sidebar-accent text-sidebar-accent-foreground',
         )}
       >
         <MessageSquare className="size-3 shrink-0" />
@@ -166,7 +163,7 @@ function formatRelativeTime(timestamp: number): string {
   const minutes = Math.floor(diff / 60000)
   const hours = Math.floor(minutes / 60)
   const days = Math.floor(hours / 24)
-  
+
   if (minutes < 1) return 'now'
   if (minutes < 60) return `${minutes}m`
   if (hours < 24) return `${hours}h`
@@ -175,15 +172,15 @@ function formatRelativeTime(timestamp: number): string {
 
 function ServerStatus() {
   const { data: health, isLoading } = useHealthQuery()
-  
+
   return (
     <Button variant="ghost" size="sm" className="gap-2">
-      <div 
+      <div
         className={cn(
           'size-2 rounded-full',
           isLoading && 'bg-muted-foreground',
           health && 'bg-green-500',
-          !isLoading && !health && 'bg-destructive'
+          !isLoading && !health && 'bg-destructive',
         )}
       />
       <Server className="size-4" />
@@ -195,7 +192,7 @@ interface SessionSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
 export function SessionSidebar(props: SessionSidebarProps) {
   const { data: projects, isLoading } = useProjectsQuery()
-  
+
   return (
     <Sidebar variant="floating" {...props}>
       <SidebarHeader>
@@ -213,7 +210,7 @@ export function SessionSidebar(props: SessionSidebarProps) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between">
@@ -240,14 +237,12 @@ export function SessionSidebar(props: SessionSidebarProps) {
                 </Link>
               </SidebarMenuItem>
             ) : (
-              projects?.map((project) => (
-                <ProjectItem key={project.id} project={project} />
-              ))
+              projects?.map((project) => <ProjectItem key={project.id} project={project} />)
             )}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      
+
       <SidebarFooter>
         <SidebarSeparator />
         <div className="flex items-center justify-between p-2">

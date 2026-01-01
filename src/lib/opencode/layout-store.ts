@@ -54,6 +54,6 @@ export const useLayoutStore = create<LayoutStore>()(
     }),
     {
       name: 'opencode-layout',
-    }
-  )
+    },
+  ),
 )

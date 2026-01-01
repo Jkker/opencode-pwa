@@ -1,9 +1,21 @@
+// oxlint-disable only-export-components
 /**
  * Tool UI components for rendering OpenCode tool calls.
  * Uses assistant-ui's makeAssistantToolUI for type-safe tool rendering.
  */
 import { makeAssistantToolUI } from '@assistant-ui/react'
-import { FileCode, GitBranch, Search, Terminal, FileEdit, Folder, Check, X, Loader2 } from 'lucide-react'
+import {
+  FileCode,
+  GitBranch,
+  Search,
+  Terminal,
+  FileEdit,
+  Folder,
+  Check,
+  X,
+  Loader2,
+} from 'lucide-react'
+
 import { cn } from '@/lib/utils'
 
 interface ToolUIWrapperProps {
@@ -31,10 +43,7 @@ function ToolUIWrapper({ icon, title, status, children }: ToolUIWrapperProps) {
 }
 
 // File Read Tool
-export const FileReadToolUI = makeAssistantToolUI<
-  { path: string },
-  { content: string }
->({
+export const FileReadToolUI = makeAssistantToolUI<{ path: string }, { content: string }>({
   toolName: 'file_read',
   render: ({ args, result, status }) => {
     const isRunning = status.type === 'running'
@@ -101,7 +110,9 @@ export const SearchToolUI = makeAssistantToolUI<
             <p className="text-muted-foreground">{result.results.length} results found</p>
             {result.results.slice(0, 5).map((r, i) => (
               <div key={i} className="rounded bg-muted p-2 text-xs">
-                <span className="font-mono text-primary">{r.file}:{r.line}</span>
+                <span className="font-mono text-primary">
+                  {r.file}:{r.line}
+                </span>
                 <pre className="mt-1 overflow-x-auto">{r.content}</pre>
               </div>
             ))}
@@ -124,7 +135,15 @@ export const ShellToolUI = makeAssistantToolUI<
       <ToolUIWrapper
         icon={<Terminal className="size-4" />}
         title={`$ ${args.command}`}
-        status={isRunning ? 'running' : result ? (result.exitCode === 0 ? 'completed' : 'error') : 'pending'}
+        status={
+          isRunning
+            ? 'running'
+            : result
+              ? result.exitCode === 0
+                ? 'completed'
+                : 'error'
+              : 'pending'
+        }
       >
         {isRunning && <p className="text-muted-foreground animate-pulse">Running command...</p>}
         {result && (
@@ -138,10 +157,7 @@ export const ShellToolUI = makeAssistantToolUI<
 })
 
 // Git Tool
-export const GitToolUI = makeAssistantToolUI<
-  { command: string },
-  { output: string }
->({
+export const GitToolUI = makeAssistantToolUI<{ command: string }, { output: string }>({
   toolName: 'git',
   render: ({ args, result, status }) => {
     const isRunning = status.type === 'running'
@@ -153,9 +169,7 @@ export const GitToolUI = makeAssistantToolUI<
       >
         {isRunning && <p className="text-muted-foreground">Running git command...</p>}
         {result && (
-          <pre className="max-h-32 overflow-auto rounded bg-muted p-2 text-xs">
-            {result.output}
-          </pre>
+          <pre className="max-h-32 overflow-auto rounded bg-muted p-2 text-xs">{result.output}</pre>
         )}
       </ToolUIWrapper>
     )

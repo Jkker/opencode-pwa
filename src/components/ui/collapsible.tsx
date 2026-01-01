@@ -1,7 +1,8 @@
 'use client'
 
-import * as React from 'react'
 import { Collapsible as CollapsiblePrimitive } from '@base-ui/react/collapsible'
+import * as React from 'react'
+
 import { cn } from '@/lib/utils'
 
 const Collapsible = CollapsiblePrimitive.Root
@@ -16,7 +17,7 @@ const CollapsibleContent = React.forwardRef<
     ref={ref}
     className={cn(
       'overflow-hidden transition-all data-[ending-style]:h-0 data-[starting-style]:h-0',
-      className
+      className,
     )}
     {...props}
   />

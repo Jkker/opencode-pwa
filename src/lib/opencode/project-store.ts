@@ -2,9 +2,10 @@
  * OpenCode project store using Zustand.
  * Manages projects list and current project.
  */
+import type { Project } from '@opencode-ai/sdk/v2/client'
+
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Project } from '@opencode-ai/sdk/v2/client'
 
 interface ProjectState {
   projects: Project[]
@@ -32,7 +33,7 @@ export const useProjectStore = create<ProjectStore>()(
       expandedProjects: new Set<string>(),
 
       setProjects: (projects) => set({ projects }),
-      
+
       setCurrentProject: (project) => set({ currentProject: project }),
 
       addProject: (project) =>
@@ -45,8 +46,7 @@ export const useProjectStore = create<ProjectStore>()(
       removeProject: (worktree) =>
         set((state) => ({
           projects: state.projects.filter((p) => p.worktree !== worktree),
-          currentProject:
-            state.currentProject?.worktree === worktree ? null : state.currentProject,
+          currentProject: state.currentProject?.worktree === worktree ? null : state.currentProject,
         })),
 
       expandProject: (worktree) =>
@@ -79,15 +79,6 @@ export const useProjectStore = create<ProjectStore>()(
       partialize: (state) => ({
         expandedProjects: Array.from(state.expandedProjects),
       }),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          const stored = state as unknown as { expandedProjects?: string[] }
-          if (Array.isArray(stored.expandedProjects)) {
-            state.expandedProjects = new Set(stored.expandedProjects)
-          }
-        }
-      },
-    }
-  )
+    },
+  ),
 )

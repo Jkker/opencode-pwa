@@ -1,22 +1,11 @@
-/**
- * Chat thread component using assistant-ui primitives.
- * Renders the conversation between user and assistant.
- */
+import { Send, Square, Copy, Check, User, Bot } from 'lucide-react'
 import * as React from 'react'
 import { type ReactNode, type ButtonHTMLAttributes } from 'react'
-import {
-  Send,
-  Square,
-  Copy,
-  Check,
-  User,
-  Bot,
-} from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 interface ChatThreadProps {
   children?: ReactNode
@@ -25,9 +14,7 @@ interface ChatThreadProps {
 export function ChatThread({ children }: ChatThreadProps) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto scroll-smooth">
-        {children}
-      </div>
+      <div className="flex-1 overflow-y-auto scroll-smooth">{children}</div>
     </div>
   )
 }
@@ -41,26 +28,22 @@ interface ChatMessageProps {
 
 export function ChatMessage({ role, content, timestamp, actions }: ChatMessageProps) {
   const isUser = role === 'user'
-  
+
   return (
     <div className={cn('group relative flex gap-3 px-4 py-4', !isUser && 'bg-muted/30')}>
       <Avatar className="size-7 shrink-0">
-        <AvatarFallback className={cn('text-xs', isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary')}>
+        <AvatarFallback
+          className={cn('text-xs', isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary')}
+        >
           {isUser ? <User className="size-3.5" /> : <Bot className="size-3.5" />}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 space-y-2 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium">
-            {isUser ? 'You' : 'Assistant'}
-          </span>
-          {timestamp && (
-            <span className="text-xs text-muted-foreground">{timestamp}</span>
-          )}
+          <span className="text-xs font-medium">{isUser ? 'You' : 'Assistant'}</span>
+          {timestamp && <span className="text-xs text-muted-foreground">{timestamp}</span>}
         </div>
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          {content}
-        </div>
+        <div className="prose prose-sm dark:prose-invert max-w-none">{content}</div>
         {actions && (
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {actions}
@@ -112,21 +95,11 @@ export function ChatComposer({
           />
           <div className="flex items-center gap-1">
             {isWorking ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                onClick={onCancel}
-              >
+              <Button variant="ghost" size="icon" className="size-8" onClick={onCancel}>
                 <Square className="size-4" />
               </Button>
             ) : (
-              <Button
-                size="icon"
-                className="size-8"
-                onClick={onSubmit}
-                disabled={!value.trim()}
-              >
+              <Button size="icon" className="size-8" onClick={onSubmit} disabled={!value.trim()}>
                 <Send className="size-4" />
               </Button>
             )}

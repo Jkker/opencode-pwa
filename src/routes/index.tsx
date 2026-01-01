@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Folder, Plus, Clock, Server } from 'lucide-react'
 
+import type { Project } from '@/lib/opencode'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useProjectsQuery, useHealthQuery } from '@/lib/opencode/queries'
 import { cn } from '@/lib/utils'
-import type { Project } from '@/lib/opencode'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -39,7 +40,7 @@ function HomePage() {
                 'size-2 rounded-full',
                 healthLoading && 'bg-muted-foreground',
                 health && 'bg-green-500',
-                !healthLoading && !health && 'bg-destructive'
+                !healthLoading && !health && 'bg-destructive',
               )}
             />
             <Server className="size-4" />

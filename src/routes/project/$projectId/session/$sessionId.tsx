@@ -3,40 +3,31 @@
  * Shows the chat interface for a specific session.
  */
 import { createFileRoute } from '@tanstack/react-router'
+import { Send, Square, Loader2, FileCode, User, Bot, MoreVertical, Copy, Check } from 'lucide-react'
 import { useState, useEffect, useRef, forwardRef } from 'react'
-import { 
-  Send, 
-  Square, 
-  Loader2,
-  FileCode,
-  User,
-  Bot,
-  MoreVertical,
-  Copy,
-  Check,
-} from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import type { Message, Part, TextPart, ToolPart } from '@/lib/opencode'
+
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
-import { SidebarTrigger } from '@/components/ui/sidebar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { cn } from '@/lib/utils'
-import { 
-  useSessionQuery, 
-  useMessagesQuery, 
+import { Separator } from '@/components/ui/separator'
+import { SidebarTrigger } from '@/components/ui/sidebar'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  useSessionQuery,
+  useMessagesQuery,
   useDiffQuery,
-  useSendPromptMutation, 
+  useSendPromptMutation,
   useAbortSessionMutation,
 } from '@/lib/opencode/queries'
-import type { Message, Part, TextPart, ToolPart } from '@/lib/opencode'
+import { cn } from '@/lib/utils'
 
 /** Maximum characters to display in tool output preview */
 const TOOL_OUTPUT_MAX_LENGTH = 500
@@ -47,7 +38,7 @@ export const Route = createFileRoute('/project/$projectId/session/$sessionId')({
 
 function SessionPage() {
   const { projectId: _projectId, sessionId } = Route.useParams()
-  
+
   const { data: session, isLoading: sessionLoading } = useSessionQuery(sessionId)
   const { data: messagesData, isLoading: messagesLoading } = useMessagesQuery(sessionId)
   const { data: diffs } = useDiffQuery(sessionId)
@@ -68,12 +59,13 @@ function SessionPage() {
   }, [sessionId])
 
   const messages = messagesData?.map((m) => m.info).filter(Boolean) ?? []
-  const parts = messagesData?.reduce<Record<string, Part[]>>((acc, m) => {
-    if (m.info?.id) {
-      acc[m.info.id] = m.parts ?? []
-    }
-    return acc
-  }, {}) ?? {}
+  const parts =
+    messagesData?.reduce<Record<string, Part[]>>((acc, m) => {
+      if (m.info?.id) {
+        acc[m.info.id] = m.parts ?? []
+      }
+      return acc
+    }, {}) ?? {}
 
   const isLoading = sessionLoading || messagesLoading
   const hasChanges = diffs && diffs.length > 0
@@ -86,11 +78,7 @@ function SessionPage() {
         <Separator orientation="vertical" className="mx-2 h-4 xl:hidden" />
         <div className="flex flex-1 items-center gap-2 min-w-0">
           <h1 className="truncate text-sm font-medium">
-            {sessionLoading ? (
-              <Skeleton className="h-4 w-32" />
-            ) : (
-              session?.title ?? 'New Session'
-            )}
+            {sessionLoading ? <Skeleton className="h-4 w-32" /> : (session?.title ?? 'New Session')}
           </h1>
         </div>
         <div className="flex items-center gap-1">
@@ -101,11 +89,13 @@ function SessionPage() {
             </Button>
           )}
           <DropdownMenu>
-            <DropdownMenuTrigger render={
-              <Button variant="ghost" size="icon" className="size-8">
-                <MoreVertical className="size-4" />
-              </Button>
-            } />
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-8">
+                  <MoreVertical className="size-4" />
+                </Button>
+              }
+            />
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Share session</DropdownMenuItem>
               <DropdownMenuItem>Export</DropdownMenuItem>
@@ -128,11 +118,7 @@ function SessionPage() {
           ) : (
             <div className="space-y-1 py-4">
               {messages.map((message) => (
-                <MessageItem
-                  key={message.id}
-                  message={message}
-                  parts={parts[message.id] ?? []}
-                />
+                <MessageItem key={message.id} message={message} parts={parts[message.id] ?? []} />
               ))}
             </div>
           )}
@@ -180,26 +166,24 @@ function MessageItem({ message, parts }: MessageItemProps) {
   const isUser = message.role === 'user'
   const textParts = parts.filter((p): p is TextPart => p.type === 'text')
   const toolParts = parts.filter((p): p is ToolPart => p.type === 'tool')
-  
+
   const text = textParts.map((p) => p.text).join('')
 
   return (
     <div className={cn('group relative flex gap-3 px-4 py-4', !isUser && 'bg-muted/30')}>
       <Avatar className="size-7 shrink-0">
-        <AvatarFallback className={cn('text-xs', isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary')}>
+        <AvatarFallback
+          className={cn('text-xs', isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary')}
+        >
           {isUser ? <User className="size-3.5" /> : <Bot className="size-3.5" />}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 space-y-2 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium">
-            {isUser ? 'You' : 'Assistant'}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {formatTime(message.time.created)}
-          </span>
+          <span className="text-xs font-medium">{isUser ? 'You' : 'Assistant'}</span>
+          <span className="text-xs text-muted-foreground">{formatTime(message.time.created)}</span>
         </div>
-        
+
         {/* Text content */}
         {text && (
           <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -228,7 +212,7 @@ function MessageItem({ message, parts }: MessageItemProps) {
 function MarkdownContent({ content }: { content: string }) {
   // Simple markdown rendering - in production, use marked + shiki
   const lines = content.split('\n')
-  
+
   return (
     <div className="whitespace-pre-wrap break-words">
       {lines.map((line, i) => {
@@ -238,23 +222,48 @@ function MarkdownContent({ content }: { content: string }) {
         }
         // Headers
         if (line.startsWith('# ')) {
-          return <h1 key={i} className="text-lg font-bold mt-4 mb-2">{line.slice(2)}</h1>
+          return (
+            <h1 key={i} className="text-lg font-bold mt-4 mb-2">
+              {line.slice(2)}
+            </h1>
+          )
         }
         if (line.startsWith('## ')) {
-          return <h2 key={i} className="text-base font-bold mt-3 mb-1">{line.slice(3)}</h2>
+          return (
+            <h2 key={i} className="text-base font-bold mt-3 mb-1">
+              {line.slice(3)}
+            </h2>
+          )
         }
         if (line.startsWith('### ')) {
-          return <h3 key={i} className="text-sm font-bold mt-2 mb-1">{line.slice(4)}</h3>
+          return (
+            <h3 key={i} className="text-sm font-bold mt-2 mb-1">
+              {line.slice(4)}
+            </h3>
+          )
         }
         // Lists
         if (line.match(/^[-*]\s/)) {
-          return <li key={i} className="ml-4">{line.slice(2)}</li>
+          return (
+            <li key={i} className="ml-4">
+              {line.slice(2)}
+            </li>
+          )
         }
         if (line.match(/^\d+\.\s/)) {
-          return <li key={i} className="ml-4 list-decimal">{line.replace(/^\d+\.\s/, '')}</li>
+          return (
+            <li key={i} className="ml-4 list-decimal">
+              {line.replace(/^\d+\.\s/, '')}
+            </li>
+          )
         }
         // Regular text
-        return <span key={i}>{line}{i < lines.length - 1 ? '\n' : ''}</span>
+        return (
+          <span key={i}>
+            {line}
+            {i < lines.length - 1 ? '\n' : ''}
+          </span>
+        )
       })}
     </div>
   )
@@ -296,11 +305,13 @@ function CopyButton({ text }: { text: string }) {
 
   return (
     <Tooltip>
-      <TooltipTrigger render={
-        <Button variant="ghost" size="icon" className="size-6" onClick={handleCopy}>
-          {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
-        </Button>
-      } />
+      <TooltipTrigger
+        render={
+          <Button variant="ghost" size="icon" className="size-6" onClick={handleCopy}>
+            {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+          </Button>
+        }
+      />
       <TooltipContent>{copied ? 'Copied!' : 'Copy'}</TooltipContent>
     </Tooltip>
   )
@@ -310,83 +321,76 @@ interface PromptInputProps {
   sessionId: string
 }
 
-const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
-  ({ sessionId }, ref) => {
-    const [value, setValue] = useState('')
-    const sendPrompt = useSendPromptMutation()
-    const abortSession = useAbortSessionMutation()
+const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(({ sessionId }, ref) => {
+  const [value, setValue] = useState('')
+  const sendPrompt = useSendPromptMutation()
+  const abortSession = useAbortSessionMutation()
 
-    const isWorking = sendPrompt.isPending
-    const canSend = value.trim().length > 0 && !isWorking
+  const isWorking = sendPrompt.isPending
+  const canSend = value.trim().length > 0 && !isWorking
 
-    const handleSubmit = async () => {
-      if (!canSend) return
-      
-      const text = value.trim()
-      setValue('')
-      
-      await sendPrompt.mutateAsync({
-        sessionId,
-        messageId: `msg_${Date.now()}`,
-        text,
-        agent: 'code', // Default agent
-        model: {
-          providerID: 'anthropic',
-          modelID: 'claude-sonnet-4-20250514',
-        },
-      })
+  const handleSubmit = async () => {
+    if (!canSend) return
+
+    const text = value.trim()
+    setValue('')
+
+    await sendPrompt.mutateAsync({
+      sessionId,
+      messageId: `msg_${Date.now()}`,
+      text,
+      agent: 'code', // Default agent
+      model: {
+        providerID: 'anthropic',
+        modelID: 'claude-sonnet-4-20250514',
+      },
+    })
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      void handleSubmit()
     }
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        void handleSubmit()
-      }
-      if (e.key === 'Escape' && isWorking) {
-        abortSession.mutate(sessionId)
-      }
+    if (e.key === 'Escape' && isWorking) {
+      abortSession.mutate(sessionId)
     }
+  }
 
-    return (
-      <div className="border-t bg-background p-4">
-        <div className="mx-auto max-w-3xl">
-          <div className="relative flex items-end gap-2 rounded-xl border bg-card p-3 shadow-sm">
-            <textarea
-              ref={ref}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask anything... (Enter to send, Shift+Enter for new line)"
-              className="min-h-[60px] max-h-[200px] flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              rows={1}
-            />
-            <div className="flex items-center gap-1">
-              {isWorking ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  onClick={() => abortSession.mutate(sessionId)}
-                >
-                  <Square className="size-4" />
-                </Button>
-              ) : (
-                <Button
-                  size="icon"
-                  className="size-8"
-                  onClick={handleSubmit}
-                  disabled={!canSend}
-                >
-                  <Send className="size-4" />
-                </Button>
-              )}
-            </div>
+  return (
+    <div className="border-t bg-background p-4">
+      <div className="mx-auto max-w-3xl">
+        <div className="relative flex items-end gap-2 rounded-xl border bg-card p-3 shadow-sm">
+          <textarea
+            ref={ref}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask anything... (Enter to send, Shift+Enter for new line)"
+            className="min-h-[60px] max-h-[200px] flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            rows={1}
+          />
+          <div className="flex items-center gap-1">
+            {isWorking ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                onClick={() => abortSession.mutate(sessionId)}
+              >
+                <Square className="size-4" />
+              </Button>
+            ) : (
+              <Button size="icon" className="size-8" onClick={handleSubmit} disabled={!canSend}>
+                <Send className="size-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
-    )
-  }
-)
+    </div>
+  )
+})
 PromptInput.displayName = 'PromptInput'
 
 function formatTime(timestamp: number): string {

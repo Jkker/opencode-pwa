@@ -5,11 +5,12 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { MessageSquare, Plus, Loader2 } from 'lucide-react'
 
+import type { Session } from '@/lib/opencode'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSessionsQuery, useCreateSessionMutation } from '@/lib/opencode/queries'
-import type { Session } from '@/lib/opencode'
 
 export const Route = createFileRoute('/project/$projectId/session/')({
   component: SessionIndexPage,
@@ -19,7 +20,7 @@ function SessionIndexPage() {
   const { projectId } = Route.useParams()
   const navigate = useNavigate()
   const directory = decodeURIComponent(projectId)
-  
+
   const { data: sessions, isLoading } = useSessionsQuery(directory)
   const createSession = useCreateSessionMutation(directory)
 
@@ -89,11 +90,7 @@ function SessionIndexPage() {
             ) : (
               <div className="space-y-1">
                 {sortedSessions?.map((session) => (
-                  <SessionRow
-                    key={session.id}
-                    session={session}
-                    projectId={projectId}
-                  />
+                  <SessionRow key={session.id} session={session} projectId={projectId} />
                 ))}
               </div>
             )}
@@ -104,13 +101,7 @@ function SessionIndexPage() {
   )
 }
 
-function SessionRow({
-  session,
-  projectId,
-}: {
-  session: Session
-  projectId: string
-}) {
+function SessionRow({ session, projectId }: { session: Session; projectId: string }) {
   const navigate = useNavigate()
   const relativeTime = formatRelativeTime(session.time.updated ?? session.time.created)
 
