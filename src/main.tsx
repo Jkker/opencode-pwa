@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { ReactI18nextProvider } from '@/lib/i18next'
+import { OpencodeProvider } from '@/lib/opencode'
 import { TanstackQueryProvider } from '@/lib/tanstack-query'
 import { TanstackRouterProvider } from '@/lib/tanstack-router'
 
@@ -17,8 +18,10 @@ createRoot(rootElement).render(
     <ReactI18nextProvider>
       <TanstackQueryProvider>
         <ThemeProvider>
-          <TanstackRouterProvider />
-          <Toaster />
+          <OpencodeProvider>
+            <TanstackRouterProvider />
+            <Toaster />
+          </OpencodeProvider>
         </ThemeProvider>
       </TanstackQueryProvider>
     </ReactI18nextProvider>

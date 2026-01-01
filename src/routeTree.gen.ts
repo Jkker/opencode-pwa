@@ -9,11 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ChatRouteRouteImport } from './routes/chat.route'
 import { Route as AppRouteRouteImport } from './routes/app.route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as AppChildrenRouteRouteImport } from './routes/app.childrenRoute'
 import { Route as DeepNestedRouteRouteImport } from './routes/deep.nested.route'
 
+const ChatRouteRoute = ChatRouteRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
   path: '/app',
@@ -23,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ChatIndexRoute = ChatIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ChatRouteRoute,
 } as any)
 const AppChildrenRouteRoute = AppChildrenRouteRouteImport.update({
   id: '/childrenRoute',
@@ -38,38 +50,64 @@ const DeepNestedRouteRoute = DeepNestedRouteRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
+  '/chat': typeof ChatRouteRouteWithChildren
   '/deep/nested': typeof DeepNestedRouteRoute
   '/app/childrenRoute': typeof AppChildrenRouteRoute
+  '/chat/': typeof ChatIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/deep/nested': typeof DeepNestedRouteRoute
   '/app/childrenRoute': typeof AppChildrenRouteRoute
+  '/chat': typeof ChatIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
+  '/chat': typeof ChatRouteRouteWithChildren
   '/deep/nested': typeof DeepNestedRouteRoute
   '/app/childrenRoute': typeof AppChildrenRouteRoute
+  '/chat/': typeof ChatIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/deep/nested' | '/app/childrenRoute'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/chat'
+    | '/deep/nested'
+    | '/app/childrenRoute'
+    | '/chat/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/deep/nested' | '/app/childrenRoute'
-  id: '__root__' | '/' | '/app' | '/deep/nested' | '/app/childrenRoute'
+  to: '/' | '/app' | '/deep/nested' | '/app/childrenRoute' | '/chat'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/chat'
+    | '/deep/nested'
+    | '/app/childrenRoute'
+    | '/chat/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
+  ChatRouteRoute: typeof ChatRouteRouteWithChildren
   DeepNestedRouteRoute: typeof DeepNestedRouteRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app': {
       id: '/app'
       path: '/app'
@@ -83,6 +121,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/chat/': {
+      id: '/chat/'
+      path: '/'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof ChatIndexRouteImport
+      parentRoute: typeof ChatRouteRoute
     }
     '/app/childrenRoute': {
       id: '/app/childrenRoute'
@@ -113,9 +158,22 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
   AppRouteRouteChildren,
 )
 
+interface ChatRouteRouteChildren {
+  ChatIndexRoute: typeof ChatIndexRoute
+}
+
+const ChatRouteRouteChildren: ChatRouteRouteChildren = {
+  ChatIndexRoute: ChatIndexRoute,
+}
+
+const ChatRouteRouteWithChildren = ChatRouteRoute._addFileChildren(
+  ChatRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
+  ChatRouteRoute: ChatRouteRouteWithChildren,
   DeepNestedRouteRoute: DeepNestedRouteRoute,
 }
 export const routeTree = rootRouteImport
