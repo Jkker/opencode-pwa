@@ -3,6 +3,7 @@ import { Folder, Plus, Clock, Server } from 'lucide-react'
 
 import type { Project } from '@/lib/opencode'
 
+import { ServerSettingsDialog } from '@/components/server-settings-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -33,7 +34,7 @@ function HomePage() {
         </div>
 
         {/* Server Status */}
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-3">
           <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
             <div
               className={cn(
@@ -48,6 +49,7 @@ function HomePage() {
               {healthLoading ? 'Connecting...' : health ? 'Connected' : 'Disconnected'}
             </span>
           </Button>
+          <ServerSettingsDialog />
         </div>
 
         {/* Recent Projects */}

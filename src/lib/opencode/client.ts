@@ -5,30 +5,38 @@
 import { createOpencodeClient, type OpencodeClient } from '@opencode-ai/sdk/v2/client'
 
 const DEFAULT_SERVER_URL = 'http://localhost:4096'
+const STORAGE_KEY = 'opencode-server-storage'
 
 function getServerUrl(): string {
-  // Check URL param first
-  const urlParam = new URLSearchParams(window.location.search).get('url')
-  if (urlParam) return urlParam
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        'state' in parsed &&
+        parsed.state &&
+        typeof parsed.state === 'object' &&
+        'url' in parsed.state &&
+        typeof parsed.state.url === 'string'
+      ) {
+        return parsed.state.url
+      }
+    }
+  } catch {}
 
-  // Check environment variable
   const envUrl = import.meta.env.VITE_OPENCODE_SERVER_URL
   if (envUrl) return envUrl
 
-  // Default to localhost
   return DEFAULT_SERVER_URL
 }
 
-let clientInstance: OpencodeClient | null = null
-
 export function getOpencodeClient(directory?: string): OpencodeClient {
-  if (!clientInstance) {
-    clientInstance = createOpencodeClient({
-      baseUrl: getServerUrl(),
-      directory,
-    })
-  }
-  return clientInstance
+  return createOpencodeClient({
+    baseUrl: getServerUrl(),
+    directory,
+  })
 }
 
 export function createDirectoryClient(directory: string): OpencodeClient {
