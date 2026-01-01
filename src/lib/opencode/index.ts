@@ -6,6 +6,7 @@ export { useServerStore } from './server-store'
 export { useProjectStore } from './project-store'
 export { useSessionStore } from './session-store'
 export { useLayoutStore } from './layout-store'
+export { useOpencodeEvents } from './events'
 
 // Re-export SDK types
 export type {

@@ -33,9 +33,12 @@ function SessionIndexPage() {
     }
   }
 
+  /** Maximum number of recent sessions to display */
+  const MAX_RECENT_SESSIONS = 20
+
   const sortedSessions = sessions
     ?.toSorted((a, b) => (b.time.updated ?? b.time.created) - (a.time.updated ?? a.time.created))
-    .slice(0, 20)
+    .slice(0, MAX_RECENT_SESSIONS)
 
   const projectName = directory.split('/').at(-1) ?? directory
 
