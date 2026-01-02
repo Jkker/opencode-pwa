@@ -9,26 +9,30 @@ import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useSwipeDrawer } from '@/hooks/use-swipe-drawer'
 
-import { BottomDrawer } from './bottom-drawer'
+import { LeftPanel } from './left-panel'
+import { PromptPanel } from './prompt-panel'
+import { RightPanel } from './right-panel'
 import { SideDrawer } from './side-drawer'
 
 interface HolyGrailLayoutProps {
   header?: React.ReactNode
-  leftSidebar?: React.ReactNode
-  rightSidebar?: React.ReactNode
-  footer?: React.ReactNode
+  sessionId?: string
+  directory?: string
   children: React.ReactNode
+  showPrompt?: boolean
 }
 
 export function HolyGrailLayout({
   header,
-  leftSidebar,
-  rightSidebar,
+  sessionId,
+  directory,
   children,
+  showPrompt = true,
 }: HolyGrailLayoutProps) {
   const isMobile = useIsMobile()
   const [leftOpen, setLeftOpen] = useState(false)
   const [rightOpen, setRightOpen] = useState(false)
+  const [_settingsOpen, setSettingsOpen] = useState(false)
 
   const handleSwipeLeft = useCallback(() => {
     if (!leftOpen) setRightOpen(true)
@@ -49,103 +53,66 @@ export function HolyGrailLayout({
     <div className="h-dvh flex bg-background">
       {/* Desktop Left Sidebar */}
       {!isMobile && (
-        <aside className="w-64 border-r border-border bg-sidebar flex-col max-h-dvh shrink-0 hidden md:flex">
-          <div className="p-4 flex-1 overflow-y-auto">
-            <h2 className="font-semibold text-sidebar-foreground mb-4">Navigation</h2>
-            {leftSidebar || <DefaultLeftSidebar />}
-          </div>
+        <aside className="w-72 border-r border-border bg-sidebar flex-col max-h-dvh shrink-0 hidden md:flex">
+          <LeftPanel onSettingsClick={() => setSettingsOpen(true)} />
         </aside>
       )}
 
-      {/* Center Area - contains header, main content, footer, and bottom drawer on mobile */}
-      <div className="flex-1 flex flex-col h-dvh overflow-auto">
-        {/* Header - inside center area */}
+      {/* Center Area - contains header, main content, and prompt panel */}
+      <div className="flex-1 flex flex-col h-dvh overflow-hidden">
+        {/* Header */}
         <header className="sticky top-0 z-30 border-b acrylic shrink-0 flex items-center justify-between h-(--header-height) px-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setLeftOpen(!leftOpen)}
-            className={!isMobile ? 'md:flex' : ''}
+            className={!isMobile ? 'md:hidden' : ''}
           >
             <PanelLeft className="h-5 w-5" />
             <span className="sr-only">Toggle left sidebar</span>
           </Button>
           <div className="flex-1 text-center">
-            {header || <span className="font-semibold">Holy Grail</span>}
+            {header || <span className="font-semibold">OpenCode</span>}
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setRightOpen(!rightOpen)}
-            className={!isMobile ? 'lg:flex' : ''}
+            className={!isMobile ? 'lg:hidden' : ''}
           >
             <PanelRight className="h-5 w-5" />
             <span className="sr-only">Toggle right sidebar</span>
           </Button>
         </header>
 
-        {/* Main Content - gray-50 background */}
-        <main className={`relative flex-1 shrink p-4 md:p-6 bg-gray-50 dark:bg-gray-900/50`}>
+        {/* Main Content */}
+        <main className="relative flex-1 overflow-auto bg-gray-50 dark:bg-gray-900/50">
           {children}
-          <BottomDrawer />
         </main>
 
-        {/* Mobile Bottom Drawer - inside center area */}
+        {/* Prompt Panel at Bottom */}
+        {showPrompt && <PromptPanel sessionId={sessionId} directory={directory} />}
       </div>
 
       {/* Desktop Right Sidebar */}
       {!isMobile && (
-        <aside className="w-64 border-l border-border bg-sidebar flex flex-col max-h-dvh shrink-0 hidden lg:flex">
-          <div className="p-4 flex-1 overflow-y-auto">
-            <h2 className="font-semibold text-sidebar-foreground mb-4">Details</h2>
-            {rightSidebar || <DefaultRightSidebar />}
-          </div>
+        <aside className="w-80 border-l border-border bg-sidebar flex flex-col max-h-dvh shrink-0 hidden lg:flex">
+          <RightPanel />
         </aside>
       )}
 
       {/* Mobile Side Drawers */}
       {isMobile && (
         <>
-          <SideDrawer open={leftOpen} onOpenChange={setLeftOpen} side="left" title="Navigation">
-            {leftSidebar || <DefaultLeftSidebar />}
+          <SideDrawer open={leftOpen} onOpenChange={setLeftOpen} side="left" title="Projects">
+            <LeftPanel onSettingsClick={() => setSettingsOpen(true)} />
           </SideDrawer>
 
-          <SideDrawer open={rightOpen} onOpenChange={setRightOpen} side="right" title="Details">
-            {rightSidebar || <DefaultRightSidebar />}
+          <SideDrawer open={rightOpen} onOpenChange={setRightOpen} side="right" title="Status">
+            <RightPanel />
           </SideDrawer>
         </>
       )}
-    </div>
-  )
-}
-
-function DefaultLeftSidebar() {
-  return (
-    <nav className="space-y-2">
-      {['Home', 'Dashboard', 'Projects', 'Settings'].map((item) => (
-        <a
-          key={item}
-          href="#"
-          className="block px-3 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-        >
-          {item}
-        </a>
-      ))}
-    </nav>
-  )
-}
-
-function DefaultRightSidebar() {
-  return (
-    <div className="space-y-4">
-      <div className="p-3 rounded-lg bg-muted">
-        <h3 className="font-medium text-sm mb-1">Quick Stats</h3>
-        <p className="text-xs text-muted-foreground">View your activity</p>
-      </div>
-      <div className="p-3 rounded-lg bg-muted">
-        <h3 className="font-medium text-sm mb-1">Recent Items</h3>
-        <p className="text-xs text-muted-foreground">No recent items</p>
-      </div>
     </div>
   )
 }
