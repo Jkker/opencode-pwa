@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LayoutRouteImport } from './routes/layout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectProjectIdRouteImport } from './routes/project/$projectId'
 import { Route as ProjectProjectIdIndexRouteImport } from './routes/project/$projectId.index'
 import { Route as ProjectProjectIdSessionIdRouteImport } from './routes/project/$projectId.$sessionId'
 
+const LayoutRoute = LayoutRouteImport.update({
+  id: '/layout',
+  path: '/layout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -38,18 +44,21 @@ const ProjectProjectIdSessionIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/layout': typeof LayoutRoute
   '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
   '/project/$projectId/$sessionId': typeof ProjectProjectIdSessionIdRoute
   '/project/$projectId/': typeof ProjectProjectIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/layout': typeof LayoutRoute
   '/project/$projectId/$sessionId': typeof ProjectProjectIdSessionIdRoute
   '/project/$projectId': typeof ProjectProjectIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/layout': typeof LayoutRoute
   '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
   '/project/$projectId/$sessionId': typeof ProjectProjectIdSessionIdRoute
   '/project/$projectId/': typeof ProjectProjectIdIndexRoute
@@ -58,14 +67,16 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/layout'
     | '/project/$projectId'
     | '/project/$projectId/$sessionId'
     | '/project/$projectId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/project/$projectId/$sessionId' | '/project/$projectId'
+  to: '/' | '/layout' | '/project/$projectId/$sessionId' | '/project/$projectId'
   id:
     | '__root__'
     | '/'
+    | '/layout'
     | '/project/$projectId'
     | '/project/$projectId/$sessionId'
     | '/project/$projectId/'
@@ -73,11 +84,19 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LayoutRoute: typeof LayoutRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/layout': {
+      id: '/layout'
+      path: '/layout'
+      fullPath: '/layout'
+      preLoaderRoute: typeof LayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -124,6 +143,7 @@ const ProjectProjectIdRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LayoutRoute: LayoutRoute,
   ProjectProjectIdRoute: ProjectProjectIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport

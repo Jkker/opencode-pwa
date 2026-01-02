@@ -25,11 +25,11 @@ function AppShell() {
 
   return (
     <>
-      <SessionSidebar />
-      <SidebarInset className="h-dvh overflow-hidden">
+      {/* <SessionSidebar /> */}
+      {/* <SidebarInset className="h-dvh overflow-hidden">
         <Outlet />
       </SidebarInset>
-      <CommandPalette />
+      <CommandPalette /> */}
     </>
   )
 }
@@ -39,13 +39,14 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
     <ThemeProvider defaultTheme="system" storageKey="opencode-theme">
       <TooltipProvider>
         <CommandProvider>
-          <SidebarProvider
+          {/* <SidebarProvider
             style={{
               '--sidebar-width': 'calc(var(--spacing) * 64)',
             }}
           >
             <AppShell />
-          </SidebarProvider>
+          </SidebarProvider> */}
+          <Outlet />
 
           <TanStackDevtools
             config={{
