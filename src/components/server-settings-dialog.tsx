@@ -1,3 +1,4 @@
+import { createOpencodeClient } from '@opencode-ai/sdk/v2/client'
 import { CheckIcon, ServerIcon, TestTubeIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 
@@ -13,25 +14,28 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { useServerStore } from '@/lib/opencode/server-store'
+import { settingStore } from '@/stores/setting-store'
 
 export function ServerSettingsDialog() {
-  const { url, healthy, setUrl } = useServerStore()
+  const url = settingStore.useValue('serverURL')
+  const healthy = settingStore.useValue('healthy')
   const [open, setOpen] = useState(false)
   const [inputUrl, setInputUrl] = useState(url)
   const [testing, setTesting] = useState(false)
 
   const handleSave = () => {
-    setUrl(inputUrl)
+    settingStore.actions.setServerURL(inputUrl)
     setOpen(false)
   }
 
   const handleTest = async () => {
     setTesting(true)
     try {
-      const client = (await import('@/lib/opencode/client')).getOpencodeClient()
-      await client.global.health()
+      const client = createOpencodeClient({ baseUrl: inputUrl })
+      const result = (await client.global.health()).data?.healthy ?? false
+      settingStore.actions.setHealthy(result)
     } catch {
+      settingStore.actions.setHealthy(false)
     } finally {
       setTesting(false)
     }

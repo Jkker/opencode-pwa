@@ -36,7 +36,6 @@
   "editor.formatOnSave": true,
   "editor.insertSpaces": true,
   "editor.linkedEditing": true,
-  // allow autocomplete for ArkType expressions like "string | num"
   "editor.quickSuggestions": {
     "strings": "on"
   },
@@ -153,14 +152,14 @@
     "**/routeTree.gen.ts": true,
     "pnpm-lock.yaml": true
   },
-  "typescript.experimental.useTsgo": true,
+  "typescript.experimental.useTsgo": false,
   "typescript.implementationsCodeLens.showOnInterfaceMethods": true,
   "typescript.native-preview.tsdk": "node_modules/@typescript/native-preview",
   "typescript.preferences.autoImportSpecifierExcludeRegexes": [
     "node:test",
     "node:dns",
     "dns",
-    "^(node:)?os$" // prioritize ArkType's "type" for autoimports
+    "^(node:)?os$"
   ],
   "typescript.tsdk": "./node_modules/typescript/lib",
   "typescript.preferences.importModuleSpecifier": "relative",

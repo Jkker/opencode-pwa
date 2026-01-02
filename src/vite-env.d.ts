@@ -1,10 +1,7 @@
 /// <reference types="vite/client" />
 /// <reference types="vitest/importMeta" />
-/**
- * Reset TypeScript's built-in types to a more sane default.
- *
- * @see https://www.totaltypescript.com/ts-reset
- */
+// Reset TypeScript's built-in types to a more sane default.
+// @see https://www.totaltypescript.com/ts-reset
 /// <reference types="@total-typescript/ts-reset" />
 
 interface ViteTypeOptions {
@@ -24,11 +21,8 @@ interface ImportMetaEnv extends ImportMetaEnvAugmented {}
 
 declare module 'csstype' {
   interface Properties {
-    /**
-     * Support for CSS custom properties
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties
-     */
+    // Support for CSS custom properties
+    // @see https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties
     [property: `--${string}`]: string | number | undefined
   }
 }

@@ -1,7 +1,5 @@
-/**
- * Session list / new session route.
- * Shows when navigating to /project/:projectId/session without a session ID.
- */
+// Session list / new session route.
+// Shows when navigating to /project/:projectId/session without a session ID.
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { MessageSquare, Plus, Loader2 } from 'lucide-react'
 
@@ -11,8 +9,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSessionsQuery, useCreateSessionMutation } from '@/lib/opencode/queries'
+import { formatRelativeTime } from '@/lib/temporal-utils'
 
-export const Route = createFileRoute('/project/$projectId/session/')({
+export const Route = createFileRoute('/project/$projectId/')({
   component: SessionIndexPage,
 })
 
@@ -27,14 +26,14 @@ function SessionIndexPage() {
   const handleNewSession = async () => {
     const session = await createSession.mutateAsync()
     if (session) {
-      void navigate({
-        to: '/project/$projectId/session/$sessionId',
+      await navigate({
+        to: '/project/$projectId/$sessionId',
         params: { projectId, sessionId: session.id },
       })
     }
   }
 
-  /** Maximum number of recent sessions to display */
+  // Maximum number of recent sessions to display
   const MAX_RECENT_SESSIONS = 20
 
   const sortedSessions = sessions
@@ -103,14 +102,18 @@ function SessionIndexPage() {
 
 function SessionRow({ session, projectId }: { session: Session; projectId: string }) {
   const navigate = useNavigate()
-  const relativeTime = formatRelativeTime(session.time.updated ?? session.time.created)
+  const timestamp = session.time.updated ?? session.time.created
+  const relativeTime = formatRelativeTime(
+    Temporal.Instant.fromEpochMilliseconds(timestamp)
+      .toZonedDateTimeISO(Temporal.Now.timeZoneId())
+      .toPlainDateTime(),
+  )
 
-  const handleClick = () => {
-    void navigate({
-      to: '/project/$projectId/session/$sessionId',
+  const handleClick = () =>
+    navigate({
+      to: '/project/$projectId/$sessionId',
       params: { projectId, sessionId: session.id },
     })
-  }
 
   return (
     <button
@@ -131,18 +134,4 @@ function SessionRow({ session, projectId }: { session: Session; projectId: strin
       <span className="text-xs text-muted-foreground shrink-0">{relativeTime}</span>
     </button>
   )
-}
-
-function formatRelativeTime(timestamp: number): string {
-  const now = Date.now()
-  const diff = now - timestamp
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(minutes / 60)
-  const days = Math.floor(hours / 24)
-
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
-  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(timestamp)
 }

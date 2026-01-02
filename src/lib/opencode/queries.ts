@@ -1,35 +1,39 @@
-/**
- * TanStack Query hooks for OpenCode SDK.
- * Provides reactive data fetching and caching.
- */
+// TanStack Query hooks for OpenCode SDK.
+// Provides reactive data fetching and caching.
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 
-import { getOpencodeClient, createDirectoryClient } from './client'
+import { settingStore } from '@/stores/setting-store'
+
+import { useClient } from './client'
 
 // Query keys
 export const queryKeys = {
-  health: ['opencode', 'health'] as const,
-  projects: ['opencode', 'projects'] as const,
-  project: (directory: string) => ['opencode', 'project', directory] as const,
-  sessions: (directory: string) => ['opencode', 'sessions', directory] as const,
-  session: (sessionId: string) => ['opencode', 'session', sessionId] as const,
-  messages: (sessionId: string) => ['opencode', 'messages', sessionId] as const,
-  diff: (sessionId: string) => ['opencode', 'diff', sessionId] as const,
-  config: (directory: string) => ['opencode', 'config', directory] as const,
-  providers: ['opencode', 'providers'] as const,
-  agents: (directory: string) => ['opencode', 'agents', directory] as const,
-  mcpStatus: (directory: string) => ['opencode', 'mcp', directory] as const,
-  lspStatus: (directory: string) => ['opencode', 'lsp', directory] as const,
-  permissions: (sessionId: string) => ['opencode', 'permissions', sessionId] as const,
+  health: (url: string) => ['opencode', 'health', url] as const,
+  projects: (url: string) => ['opencode', 'projects', url] as const,
+  project: (url: string, directory: string) => ['opencode', 'project', url, directory] as const,
+  sessions: (url: string, directory: string) => ['opencode', 'sessions', url, directory] as const,
+  session: (url: string, sessionId: string) => ['opencode', 'session', url, sessionId] as const,
+  messages: (url: string, sessionId: string) => ['opencode', 'messages', url, sessionId] as const,
+  diff: (url: string, sessionId: string) => ['opencode', 'diff', url, sessionId] as const,
+  config: (url: string, directory: string) => ['opencode', 'config', url, directory] as const,
+  providers: (url: string) => ['opencode', 'providers', url] as const,
+  agents: (url: string, directory: string) => ['opencode', 'agents', url, directory] as const,
+  mcpStatus: (url: string, directory: string) => ['opencode', 'mcp', url, directory] as const,
+  lspStatus: (url: string, directory: string) => ['opencode', 'lsp', url, directory] as const,
+  permissions: (url: string, sessionId: string) =>
+    ['opencode', 'permissions', url, sessionId] as const,
 }
 
 // Health check
 export function useHealthQuery() {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+
   return useQuery({
-    queryKey: queryKeys.health,
+    queryKey: queryKeys.health(url),
     queryFn: async () => {
       try {
-        const client = getOpencodeClient()
         const result = await client.global.health()
         return result.data ?? null
       } catch {
@@ -43,11 +47,13 @@ export function useHealthQuery() {
 
 // Projects
 export function useProjectsQuery() {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+
   return useQuery({
-    queryKey: queryKeys.projects,
+    queryKey: queryKeys.projects(url),
     queryFn: async () => {
       try {
-        const client = getOpencodeClient()
         const result = await client.project.list()
         return result.data ?? []
       } catch {
@@ -60,12 +66,14 @@ export function useProjectsQuery() {
 
 // Sessions for a project
 export function useSessionsQuery(directory: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+
   return useQuery({
-    queryKey: queryKeys.sessions(directory ?? ''),
+    queryKey: queryKeys.sessions(url, directory ?? ''),
     queryFn: async () => {
       if (!directory) return []
       try {
-        const client = createDirectoryClient(directory)
         const result = await client.session.list()
         return result.data ?? []
       } catch {
@@ -79,12 +87,14 @@ export function useSessionsQuery(directory: string | undefined) {
 
 // Single session
 export function useSessionQuery(sessionId: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+
   return useQuery({
-    queryKey: queryKeys.session(sessionId ?? ''),
+    queryKey: queryKeys.session(url, sessionId ?? ''),
     queryFn: async () => {
       if (!sessionId) return null
       try {
-        const client = getOpencodeClient()
         const result = await client.session.get({ sessionID: sessionId })
         return result.data ?? null
       } catch {
@@ -98,12 +108,14 @@ export function useSessionQuery(sessionId: string | undefined) {
 
 // Session messages
 export function useMessagesQuery(sessionId: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+
   return useQuery({
-    queryKey: queryKeys.messages(sessionId ?? ''),
+    queryKey: queryKeys.messages(url, sessionId ?? ''),
     queryFn: async () => {
       if (!sessionId) return []
       try {
-        const client = getOpencodeClient()
         const result = await client.session.messages({ sessionID: sessionId, limit: 1000 })
         return result.data ?? []
       } catch {
@@ -117,12 +129,14 @@ export function useMessagesQuery(sessionId: string | undefined) {
 
 // Session diff
 export function useDiffQuery(sessionId: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+
   return useQuery({
-    queryKey: queryKeys.diff(sessionId ?? ''),
+    queryKey: queryKeys.diff(url, sessionId ?? ''),
     queryFn: async () => {
       if (!sessionId) return []
       try {
-        const client = getOpencodeClient()
         const result = await client.session.diff({ sessionID: sessionId })
         return result.data ?? []
       } catch {
@@ -136,11 +150,13 @@ export function useDiffQuery(sessionId: string | undefined) {
 
 // Config
 export function useConfigQuery(directory: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+
   return useQuery({
-    queryKey: queryKeys.config(directory ?? ''),
+    queryKey: queryKeys.config(url, directory ?? ''),
     queryFn: async () => {
       if (!directory) return null
-      const client = createDirectoryClient(directory)
       const result = await client.config.get()
       return result.data
     },
@@ -150,10 +166,12 @@ export function useConfigQuery(directory: string | undefined) {
 
 // Providers
 export function useProvidersQuery() {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+
   return useQuery({
-    queryKey: queryKeys.providers,
+    queryKey: queryKeys.providers(url),
     queryFn: async () => {
-      const client = getOpencodeClient()
       const result = await client.provider.list()
       return result.data ?? []
     },
@@ -162,11 +180,13 @@ export function useProvidersQuery() {
 
 // Agents
 export function useAgentsQuery(directory: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+
   return useQuery({
-    queryKey: queryKeys.agents(directory ?? ''),
+    queryKey: queryKeys.agents(url, directory ?? ''),
     queryFn: async () => {
       if (!directory) return []
-      const client = createDirectoryClient(directory)
       const result = await client.app.agents()
       return result.data ?? []
     },
@@ -176,11 +196,13 @@ export function useAgentsQuery(directory: string | undefined) {
 
 // MCP Status
 export function useMcpStatusQuery(directory: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+
   return useQuery({
-    queryKey: queryKeys.mcpStatus(directory ?? ''),
+    queryKey: queryKeys.mcpStatus(url, directory ?? ''),
     queryFn: async () => {
       if (!directory) return []
-      const client = createDirectoryClient(directory)
       const result = await client.mcp.status()
       return result.data ?? []
     },
@@ -190,22 +212,34 @@ export function useMcpStatusQuery(directory: string | undefined) {
 
 // Create session mutation
 export function useCreateSessionMutation(directory: string) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   return useMutation({
     mutationFn: async () => {
-      const client = createDirectoryClient(directory)
       const result = await client.session.create()
       return result.data
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.sessions(directory) })
+    onSuccess: (session) => {
+      if (!session) return
+      void queryClient.invalidateQueries({ queryKey: queryKeys.sessions(url, directory) })
+      void navigate({
+        to: '/project/$projectId/$sessionId',
+        params: {
+          projectId: directory,
+          sessionId: session.id,
+        },
+      })
     },
   })
 }
 
 // Send prompt mutation
 export function useSendPromptMutation() {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -224,7 +258,6 @@ export function useSendPromptMutation() {
       model: { providerID: string; modelID: string }
       variant?: string
     }) => {
-      const client = getOpencodeClient()
       const result = await client.session.prompt({
         sessionID: sessionId,
         messageID: messageId,
@@ -241,17 +274,18 @@ export function useSendPromptMutation() {
       })
       return result.data
     },
-    onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.messages(variables.sessionId) })
+    onSuccess: (_, { sessionId }) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.messages(url, sessionId) })
     },
   })
 }
 
 // Abort session mutation
 export function useAbortSessionMutation() {
+  const client = useClient()
+
   return useMutation({
     mutationFn: async (sessionId: string) => {
-      const client = getOpencodeClient()
       await client.session.abort({ sessionID: sessionId })
     },
   })
@@ -259,11 +293,12 @@ export function useAbortSessionMutation() {
 
 // Archive session mutation
 export function useArchiveSessionMutation(directory: string) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (sessionId: string) => {
-      const client = getOpencodeClient()
       await client.session.update({
         sessionID: sessionId,
         directory,
@@ -271,7 +306,7 @@ export function useArchiveSessionMutation(directory: string) {
       })
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.sessions(directory) })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.sessions(url, directory) })
     },
   })
 }

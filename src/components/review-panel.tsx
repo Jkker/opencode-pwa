@@ -1,22 +1,21 @@
-/**
- * Review Panel component for viewing file changes and diffs.
- * Shows modified files in the current session with diff views.
- */
-import { useState } from 'react'
-import { 
-  X, 
-  FileCode, 
-  Plus, 
-  Minus, 
+// Review Panel component for viewing file changes and diffs.
+// Shows modified files in the current session with diff views.
+import {
+  X,
+  FileCode,
+  Plus,
+  Minus,
   Maximize2,
   Minimize2,
   SplitSquareVertical,
   AlignJustify,
 } from 'lucide-react'
+import { useState } from 'react'
+
+import type { FileDiff } from '@/lib/opencode'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { FileDiff } from '@/lib/opencode'
 
 type DiffViewMode = 'unified' | 'split'
 
@@ -33,18 +32,21 @@ export function ReviewPanel({ isOpen, onClose, diffs, sessionId: _sessionId }: R
   const [isMaximized, setIsMaximized] = useState(false)
 
   const activeDiff = diffs.find((d) => d.file === activeFile)
-  
+
   // Calculate total stats
   const totalAdditions = diffs.reduce((sum, d) => sum + d.additions, 0)
-  const totalDeletions = diffs.reduce((sum, d) => sum + (d.before.length > d.after.length ? 1 : 0), 0)
+  const totalDeletions = diffs.reduce(
+    (sum, d) => sum + (d.before.length > d.after.length ? 1 : 0),
+    0,
+  )
 
   if (!isOpen) return null
 
   return (
-    <div 
+    <div
       className={cn(
         'flex flex-col border-l bg-background',
-        isMaximized ? 'fixed inset-0 z-50' : 'w-[400px] shrink-0'
+        isMaximized ? 'fixed inset-0 z-50' : 'w-[400px] shrink-0',
       )}
     >
       {/* Header */}
@@ -83,11 +85,7 @@ export function ReviewPanel({ isOpen, onClose, diffs, sessionId: _sessionId }: R
             className="size-7"
             onClick={() => setIsMaximized(!isMaximized)}
           >
-            {isMaximized ? (
-              <Minimize2 className="size-4" />
-            ) : (
-              <Maximize2 className="size-4" />
-            )}
+            {isMaximized ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           </Button>
           <Button variant="ghost" size="icon" className="size-7" onClick={onClose}>
             <X className="size-4" />
@@ -101,16 +99,16 @@ export function ReviewPanel({ isOpen, onClose, diffs, sessionId: _sessionId }: R
           {diffs.map((diff) => {
             const fileName = diff.file.split('/').at(-1) ?? diff.file
             const isActive = diff.file === activeFile
-            
+
             return (
               <button
                 key={diff.file}
                 onClick={() => setActiveFile(diff.file)}
                 className={cn(
                   'flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm whitespace-nowrap',
-                  isActive 
-                    ? 'border-primary text-foreground' 
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                  isActive
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground',
                 )}
               >
                 <FileCode className="size-3.5" />
@@ -152,13 +150,7 @@ function DiffView({ diff, mode }: DiffViewProps) {
         <div className="flex-1 overflow-x-auto">
           <div className="min-w-max">
             {beforeLines.map((line, i) => (
-              <div
-                key={i}
-                className={cn(
-                  'flex',
-                  afterLines[i] !== line && 'bg-red-500/10'
-                )}
-              >
+              <div key={i} className={cn('flex', afterLines[i] !== line && 'bg-red-500/10')}>
                 <span className="w-10 shrink-0 border-r bg-muted px-2 py-0.5 text-right text-muted-foreground">
                   {i + 1}
                 </span>
@@ -171,13 +163,7 @@ function DiffView({ diff, mode }: DiffViewProps) {
         <div className="flex-1 overflow-x-auto">
           <div className="min-w-max">
             {afterLines.map((line, i) => (
-              <div
-                key={i}
-                className={cn(
-                  'flex',
-                  beforeLines[i] !== line && 'bg-green-500/10'
-                )}
-              >
+              <div key={i} className={cn('flex', beforeLines[i] !== line && 'bg-green-500/10')}>
                 <span className="w-10 shrink-0 border-r bg-muted px-2 py-0.5 text-right text-muted-foreground">
                   {i + 1}
                 </span>
@@ -197,7 +183,7 @@ function DiffView({ diff, mode }: DiffViewProps) {
         const beforeLine = beforeLines[i]
         const isAdded = beforeLine === undefined || beforeLine !== line
         const isRemoved = beforeLine !== undefined && beforeLine !== line
-        
+
         return (
           <div key={i}>
             {isRemoved && beforeLine && (
@@ -209,16 +195,17 @@ function DiffView({ diff, mode }: DiffViewProps) {
               </div>
             )}
             <div className={cn('flex', isAdded && 'bg-green-500/10')}>
-              <span className={cn(
-                'w-10 shrink-0 border-r px-2 py-0.5 text-right',
-                isAdded ? 'bg-green-500/20 text-green-600' : 'bg-muted text-muted-foreground'
-              )}>
+              <span
+                className={cn(
+                  'w-10 shrink-0 border-r px-2 py-0.5 text-right',
+                  isAdded ? 'bg-green-500/20 text-green-600' : 'bg-muted text-muted-foreground',
+                )}
+              >
                 {isAdded ? '+' : i + 1}
               </span>
-              <pre className={cn(
-                'flex-1 px-2 py-0.5 whitespace-pre',
-                isAdded && 'text-green-600'
-              )}>{line}</pre>
+              <pre className={cn('flex-1 px-2 py-0.5 whitespace-pre', isAdded && 'text-green-600')}>
+                {line}
+              </pre>
             </div>
           </div>
         )

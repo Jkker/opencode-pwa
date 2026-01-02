@@ -57,13 +57,6 @@ __screenshots__
 
 # VSCode
 .vscode-test
-!.vscode
-.vscode/*
-!.vscode/extensions.json
-!.vscode/launch.json
-!.vscode/mcp.json
-# See https://marketplace.visualstudio.com/items?itemName=swellaby.workspace-config-plus
-!.vscode/*.shared.json
 
 # Yarn v2
 .yarn/cache

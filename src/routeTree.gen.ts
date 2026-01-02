@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectProjectIdRouteImport } from './routes/project/$projectId'
-import { Route as ProjectProjectIdSessionIndexRouteImport } from './routes/project/$projectId/session/index'
-import { Route as ProjectProjectIdSessionSessionIdRouteImport } from './routes/project/$projectId/session/$sessionId'
+import { Route as ProjectProjectIdIndexRouteImport } from './routes/project/$projectId.index'
+import { Route as ProjectProjectIdSessionIdRouteImport } from './routes/project/$projectId.$sessionId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -24,57 +24,51 @@ const ProjectProjectIdRoute = ProjectProjectIdRouteImport.update({
   path: '/project/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectProjectIdSessionIndexRoute =
-  ProjectProjectIdSessionIndexRouteImport.update({
-    id: '/session/',
-    path: '/session/',
-    getParentRoute: () => ProjectProjectIdRoute,
-  } as any)
-const ProjectProjectIdSessionSessionIdRoute =
-  ProjectProjectIdSessionSessionIdRouteImport.update({
-    id: '/session/$sessionId',
-    path: '/session/$sessionId',
+const ProjectProjectIdIndexRoute = ProjectProjectIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProjectProjectIdRoute,
+} as any)
+const ProjectProjectIdSessionIdRoute =
+  ProjectProjectIdSessionIdRouteImport.update({
+    id: '/$sessionId',
+    path: '/$sessionId',
     getParentRoute: () => ProjectProjectIdRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
-  '/project/$projectId/session/$sessionId': typeof ProjectProjectIdSessionSessionIdRoute
-  '/project/$projectId/session': typeof ProjectProjectIdSessionIndexRoute
+  '/project/$projectId/$sessionId': typeof ProjectProjectIdSessionIdRoute
+  '/project/$projectId/': typeof ProjectProjectIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
-  '/project/$projectId/session/$sessionId': typeof ProjectProjectIdSessionSessionIdRoute
-  '/project/$projectId/session': typeof ProjectProjectIdSessionIndexRoute
+  '/project/$projectId/$sessionId': typeof ProjectProjectIdSessionIdRoute
+  '/project/$projectId': typeof ProjectProjectIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
-  '/project/$projectId/session/$sessionId': typeof ProjectProjectIdSessionSessionIdRoute
-  '/project/$projectId/session/': typeof ProjectProjectIdSessionIndexRoute
+  '/project/$projectId/$sessionId': typeof ProjectProjectIdSessionIdRoute
+  '/project/$projectId/': typeof ProjectProjectIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/project/$projectId'
-    | '/project/$projectId/session/$sessionId'
-    | '/project/$projectId/session'
+    | '/project/$projectId/$sessionId'
+    | '/project/$projectId/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/project/$projectId'
-    | '/project/$projectId/session/$sessionId'
-    | '/project/$projectId/session'
+  to: '/' | '/project/$projectId/$sessionId' | '/project/$projectId'
   id:
     | '__root__'
     | '/'
     | '/project/$projectId'
-    | '/project/$projectId/session/$sessionId'
-    | '/project/$projectId/session/'
+    | '/project/$projectId/$sessionId'
+    | '/project/$projectId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -98,31 +92,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/project/$projectId/session/': {
-      id: '/project/$projectId/session/'
-      path: '/session'
-      fullPath: '/project/$projectId/session'
-      preLoaderRoute: typeof ProjectProjectIdSessionIndexRouteImport
+    '/project/$projectId/': {
+      id: '/project/$projectId/'
+      path: '/'
+      fullPath: '/project/$projectId/'
+      preLoaderRoute: typeof ProjectProjectIdIndexRouteImport
       parentRoute: typeof ProjectProjectIdRoute
     }
-    '/project/$projectId/session/$sessionId': {
-      id: '/project/$projectId/session/$sessionId'
-      path: '/session/$sessionId'
-      fullPath: '/project/$projectId/session/$sessionId'
-      preLoaderRoute: typeof ProjectProjectIdSessionSessionIdRouteImport
+    '/project/$projectId/$sessionId': {
+      id: '/project/$projectId/$sessionId'
+      path: '/$sessionId'
+      fullPath: '/project/$projectId/$sessionId'
+      preLoaderRoute: typeof ProjectProjectIdSessionIdRouteImport
       parentRoute: typeof ProjectProjectIdRoute
     }
   }
 }
 
 interface ProjectProjectIdRouteChildren {
-  ProjectProjectIdSessionSessionIdRoute: typeof ProjectProjectIdSessionSessionIdRoute
-  ProjectProjectIdSessionIndexRoute: typeof ProjectProjectIdSessionIndexRoute
+  ProjectProjectIdSessionIdRoute: typeof ProjectProjectIdSessionIdRoute
+  ProjectProjectIdIndexRoute: typeof ProjectProjectIdIndexRoute
 }
 
 const ProjectProjectIdRouteChildren: ProjectProjectIdRouteChildren = {
-  ProjectProjectIdSessionSessionIdRoute: ProjectProjectIdSessionSessionIdRoute,
-  ProjectProjectIdSessionIndexRoute: ProjectProjectIdSessionIndexRoute,
+  ProjectProjectIdSessionIdRoute: ProjectProjectIdSessionIdRoute,
+  ProjectProjectIdIndexRoute: ProjectProjectIdIndexRoute,
 }
 
 const ProjectProjectIdRouteWithChildren =

@@ -1,13 +1,12 @@
-/**
- * Real-time event subscription hook for OpenCode SDK.
- * Uses Server-Sent Events to receive live updates.
- *
- * Note: SSE subscription is handled differently in the SDK.
- * This is a simplified placeholder that will need to be updated
- * based on the actual SDK's event stream implementation.
- */
+// Real-time event subscription hook for OpenCode SDK.
+// Uses Server-Sent Events to receive live updates.
+// Note: SSE subscription is handled differently in the SDK.
+// This is a simplified placeholder that will need to be updated
+// based on the actual SDK's event stream implementation.
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useCallback } from 'react'
+
+import { settingStore } from '@/stores/setting-store'
 
 import { queryKeys } from './queries'
 
@@ -18,19 +17,18 @@ interface EventCallbacks {
   onError?: (error: Error) => void
 }
 
-/**
- * Hook for subscribing to OpenCode events for a specific directory.
- * Currently uses polling as a fallback until SSE is properly integrated.
- */
+// Hook for subscribing to OpenCode events for a specific directory.
+// Currently uses polling as a fallback until SSE is properly integrated.
 export function useOpencodeEvents(directory: string | undefined, _callbacks?: EventCallbacks) {
   const queryClient = useQueryClient()
+  const url = settingStore.useValue('serverURL')
 
   // Memoize the refetch function
   const refetchQueries = useCallback(() => {
     if (!directory) return
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions(directory) })
-    void queryClient.invalidateQueries({ queryKey: queryKeys.projects })
-  }, [directory, queryClient])
+    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions(url, directory) })
+    void queryClient.invalidateQueries({ queryKey: queryKeys.projects(url) })
+  }, [directory, queryClient, url])
 
   useEffect(() => {
     if (!directory) return

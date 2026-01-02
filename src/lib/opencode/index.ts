@@ -1,11 +1,7 @@
-/**
- * OpenCode module exports
- */
-export { getOpencodeClient, createDirectoryClient, type OpencodeClient } from './client'
-export { useServerStore } from './server-store'
-export { useProjectStore } from './project-store'
-export { useSessionStore } from './session-store'
-export { useLayoutStore } from './layout-store'
+// OpenCode module exports
+export { projectStore } from '@/stores/project-store'
+export { sessionStore } from '../../stores/session-store'
+export { layoutStore } from '../../stores/layout-store'
 export { useOpencodeEvents } from './events'
 
 // Re-export SDK types

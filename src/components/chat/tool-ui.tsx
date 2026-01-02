@@ -1,8 +1,6 @@
 // oxlint-disable only-export-components
-/**
- * Tool UI components for rendering OpenCode tool calls.
- * Uses assistant-ui's makeAssistantToolUI for type-safe tool rendering.
- */
+// Tool UI components for rendering OpenCode tool calls.
+// Uses assistant-ui's makeAssistantToolUI for type-safe tool rendering.
 import { makeAssistantToolUI } from '@assistant-ui/react'
 import {
   FileCode,

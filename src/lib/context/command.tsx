@@ -1,7 +1,5 @@
-/**
- * Command palette and keyboard shortcuts context.
- * Implements global command system like Mod+Shift+P.
- */
+// Command palette and keyboard shortcuts context.
+// Implements global command system like Mod+Shift+P.
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 
 export interface Command {
@@ -11,7 +9,7 @@ export interface Command {
   category?: string
   keybind?: string
   action: () => void
-  /** Whether the command should appear in the palette */
+  // Whether the command should appear in the palette
   hidden?: boolean
 }
 
@@ -60,14 +58,17 @@ export function CommandProvider({ children }: CommandProviderProps) {
     setCommands((prev) => prev.filter((c) => c.id !== id))
   }, [])
 
-  const executeCommand = useCallback((id: string) => {
-    const command = commands.find((c) => c.id === id)
-    if (command) {
-      command.action()
-      setIsOpen(false)
-      setSearch('')
-    }
-  }, [commands])
+  const executeCommand = useCallback(
+    (id: string) => {
+      const command = commands.find((c) => c.id === id)
+      if (command) {
+        command.action()
+        setIsOpen(false)
+        setSearch('')
+      }
+    },
+    [commands],
+  )
 
   const filteredCommands = commands
     .filter((c) => !c.hidden)
@@ -96,7 +97,7 @@ export function CommandProvider({ children }: CommandProviderProps) {
       // Check registered command keybinds
       for (const command of commands) {
         if (!command.keybind) continue
-        
+
         const parts = command.keybind.toLowerCase().split('+')
         const key = parts.at(-1)
         const needsMod = parts.includes('mod')
@@ -139,10 +140,10 @@ export function CommandProvider({ children }: CommandProviderProps) {
   )
 }
 
-/** Format keybind for display */
+// Format keybind for display
 export function formatKeybind(keybind: string): string {
   const isMac = typeof navigator !== 'undefined' && navigator.platform.includes('Mac')
-  
+
   return keybind
     .replace(/mod/gi, isMac ? '⌘' : 'Ctrl')
     .replace(/shift/gi, isMac ? '⇧' : 'Shift')

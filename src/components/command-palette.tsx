@@ -1,9 +1,7 @@
-/**
- * Command Palette dialog component.
- * Opens with Mod+Shift+P and allows searching and executing commands.
- */
-import { useEffect, useRef, useState } from 'react'
+// Command Palette dialog component.
+// Opens with Mod+Shift+P and allows searching and executing commands.
 import { Search, Command } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useCommands, formatKeybind } from '@/lib/context/command'
 import { cn } from '@/lib/utils'
@@ -53,12 +51,15 @@ export function CommandPalette() {
   }
 
   // Group commands by category
-  const groupedCommands = filteredCommands.reduce((acc, command) => {
-    const category = command.category ?? 'General'
-    if (!acc[category]) acc[category] = []
-    acc[category].push(command)
-    return acc
-  }, {} as Record<string, typeof filteredCommands>)
+  const groupedCommands = filteredCommands.reduce(
+    (acc, command) => {
+      const category = command.category ?? 'General'
+      if (!acc[category]) acc[category] = []
+      acc[category].push(command)
+      return acc
+    },
+    {} as Record<string, typeof filteredCommands>,
+  )
 
   if (!isOpen) return null
 
@@ -69,7 +70,7 @@ export function CommandPalette() {
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" />
-      
+
       {/* Dialog */}
       <div
         className="relative w-full max-w-lg rounded-lg border bg-popover shadow-lg"
@@ -94,9 +95,7 @@ export function CommandPalette() {
         {/* Command list */}
         <div ref={listRef} className="max-h-[300px] overflow-y-auto p-1">
           {filteredCommands.length === 0 ? (
-            <div className="py-6 text-center text-sm text-muted-foreground">
-              No commands found
-            </div>
+            <div className="py-6 text-center text-sm text-muted-foreground">No commands found</div>
           ) : (
             Object.entries(groupedCommands).map(([category, commands]) => (
               <div key={category}>
@@ -114,7 +113,7 @@ export function CommandPalette() {
                       onMouseEnter={() => setSelectedIndex(globalIndex)}
                       className={cn(
                         'flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm',
-                        isSelected ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
+                        isSelected ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
                       )}
                     >
                       <div className="flex items-center gap-2">

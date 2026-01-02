@@ -1,7 +1,5 @@
-/**
- * Project layout route.
- * Wraps project-specific routes with project context.
- */
+// Project layout route.
+// Wraps project-specific routes with project context.
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/project/$projectId')({

@@ -8,17 +8,17 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { SessionSidebar } from '@/components/chat/session-sidebar'
 import { CommandPalette } from '@/components/command-palette'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { CommandProvider } from '@/lib/context/command'
 import { ThemeProvider } from '@/components/ui/theme-provider'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { useDefaultCommands } from '@/hooks/use-default-commands'
+import { CommandProvider } from '@/lib/context/command'
 
 interface RootRouteContext {
   queryClient: QueryClient
   isProtected?: boolean
 }
 
-/** Inner component that uses sidebar context */
+// Inner component that uses sidebar context
 function AppShell() {
   // Register default commands (needs to be inside SidebarProvider)
   useDefaultCommands()

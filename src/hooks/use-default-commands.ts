@@ -1,22 +1,19 @@
-/**
- * Hook for registering default application commands.
- * These are available globally throughout the app.
- */
-import { useEffect } from 'react'
+// Hook for registering default application commands.
+// These are available globally throughout the app.
 import { useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
 
-import { useCommands } from '@/lib/context/command'
-import { useTheme } from '@/hooks/use-theme'
-import { useLayoutStore } from '@/lib/opencode/layout-store'
-import { usePermissionStore } from '@/lib/opencode/permission-store'
 import { useSidebar } from '@/components/ui/sidebar'
+import { useTheme } from '@/hooks/use-theme'
+import { useCommands } from '@/lib/context/command'
+import { layoutStore } from '@/stores/layout-store'
+import { settingStore } from '@/stores/setting-store'
 
 export function useDefaultCommands() {
   const { registerCommand, unregisterCommand } = useCommands()
   const navigate = useNavigate()
   const { theme, setTheme } = useTheme()
-  const { toggleSidebar, toggleTerminal, toggleReview } = useLayoutStore()
-  const { toggleAutoAcceptEdits, autoAcceptEdits } = usePermissionStore()
+  const autoAcceptEdits = settingStore.useValue('autoAcceptEdits')
   const { toggleSidebar: toggleSidebarUI } = useSidebar()
 
   useEffect(() => {
@@ -45,7 +42,7 @@ export function useDefaultCommands() {
         category: 'Layout',
         keybind: 'mod+b',
         action: () => {
-          toggleSidebar()
+          layoutStore.set('sidebarOpen', (v) => !v)
           toggleSidebarUI()
         },
       },
@@ -54,14 +51,14 @@ export function useDefaultCommands() {
         name: 'Toggle Terminal',
         category: 'Layout',
         keybind: 'ctrl+`',
-        action: toggleTerminal,
+        action: () => layoutStore.set('terminalOpen', (v) => !v),
       },
       {
         id: 'toggle-review',
         name: 'Toggle Review Panel',
         category: 'Layout',
         keybind: 'mod+shift+r',
-        action: toggleReview,
+        action: () => layoutStore.set('reviewOpen', (v) => !v),
       },
 
       // Theme
@@ -102,7 +99,7 @@ export function useDefaultCommands() {
         name: autoAcceptEdits ? 'Disable Auto-Accept Edits' : 'Enable Auto-Accept Edits',
         category: 'Permissions',
         keybind: 'mod+shift+a',
-        action: toggleAutoAcceptEdits,
+        action: settingStore.actions.toggleAutoAcceptEdits,
       },
     ]
 
@@ -123,11 +120,7 @@ export function useDefaultCommands() {
     navigate,
     theme,
     setTheme,
-    toggleSidebar,
     toggleSidebarUI,
-    toggleTerminal,
-    toggleReview,
-    toggleAutoAcceptEdits,
     autoAcceptEdits,
   ])
 }
