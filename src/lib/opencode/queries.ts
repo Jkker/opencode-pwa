@@ -7,6 +7,75 @@ import { settingStore } from '@/stores/setting-store'
 
 import { useClient } from './client'
 
+// Types based on OpenAPI spec
+export interface ModelCapabilities {
+  temperature: boolean
+  reasoning: boolean
+  attachment: boolean
+  toolcall: boolean
+  input: { text: boolean; audio: boolean; image: boolean; video: boolean; pdf: boolean }
+  output: { text: boolean; audio: boolean; image: boolean; video: boolean; pdf: boolean }
+  interleaved: boolean | { field: 'reasoning_content' | 'reasoning_details' }
+}
+
+export interface ModelCost {
+  input: number
+  output: number
+  cache: { read: number; write: number }
+}
+
+export interface ModelLimit {
+  context: number
+  output: number
+}
+
+export interface Model {
+  id: string
+  providerID: string
+  name: string
+  family: string
+  status?: 'active' | 'alpha' | 'beta' | 'deprecated'
+  cost: ModelCost
+  limit: ModelLimit
+  capabilities: ModelCapabilities
+  release_date: string
+  variants?: Record<string, Record<string, unknown>>
+}
+
+export interface Provider {
+  id: string
+  name: string
+  env: string[]
+  models: Record<string, Model>
+  source?: string
+}
+
+export interface ProvidersResponse {
+  all: Provider[]
+  default: Record<string, string>
+  connected: string[]
+}
+
+export interface Agent {
+  name: string
+  description?: string
+  mode: 'primary' | 'subagent' | 'all'
+  native: boolean
+  hidden?: boolean
+  model?: { providerID: string; modelID: string }
+}
+
+export interface ProviderAuthMethod {
+  type: 'api_key' | 'oauth'
+  name?: string
+  oauth?: {
+    clientId: string
+    authUrl: string
+    tokenUrl: string
+    scope: string
+  }
+}
+
 // Query keys
 export const queryKeys = {
   health: (url: string) => ['opencode', 'health', url] as const,
@@ -18,11 +87,13 @@ export const queryKeys = {
   diff: (url: string, sessionId: string) => ['opencode', 'diff', url, sessionId] as const,
   config: (url: string, directory: string) => ['opencode', 'config', url, directory] as const,
   providers: (url: string) => ['opencode', 'providers', url] as const,
+  providerAuth: (url: string) => ['opencode', 'providerAuth', url] as const,
   agents: (url: string, directory: string) => ['opencode', 'agents', url, directory] as const,
   mcpStatus: (url: string, directory: string) => ['opencode', 'mcp', url, directory] as const,
   lspStatus: (url: string, directory: string) => ['opencode', 'lsp', url, directory] as const,
   permissions: (url: string, sessionId: string) =>
     ['opencode', 'permissions', url, sessionId] as const,
+  commands: (url: string, directory: string) => ['opencode', 'commands', url, directory] as const,
 }
 
 // Health check
@@ -164,7 +235,7 @@ export function useConfigQuery(directory: string | undefined) {
   })
 }
 
-// Providers
+// Providers with proper typing
 export function useProvidersQuery() {
   const url = settingStore.useValue('serverURL')
   const client = useClient()
@@ -173,12 +244,26 @@ export function useProvidersQuery() {
     queryKey: queryKeys.providers(url),
     queryFn: async () => {
       const result = await client.provider.list()
-      return result.data ?? []
+      return (result.data as ProvidersResponse | undefined) ?? null
     },
   })
 }
 
-// Agents
+// Provider auth methods
+export function useProviderAuthQuery() {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+
+  return useQuery({
+    queryKey: queryKeys.providerAuth(url),
+    queryFn: async () => {
+      const result = await client.provider.auth()
+      return (result.data as Record<string, ProviderAuthMethod[]> | undefined) ?? {}
+    },
+  })
+}
+
+// Agents with proper typing
 export function useAgentsQuery(directory: string | undefined) {
   const url = settingStore.useValue('serverURL')
   const client = useClient(directory)
@@ -188,6 +273,22 @@ export function useAgentsQuery(directory: string | undefined) {
     queryFn: async () => {
       if (!directory) return []
       const result = await client.app.agents()
+      return (result.data as Agent[] | undefined) ?? []
+    },
+    enabled: !!directory,
+  })
+}
+
+// Commands
+export function useCommandsQuery(directory: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+
+  return useQuery({
+    queryKey: queryKeys.commands(url, directory ?? ''),
+    queryFn: async () => {
+      if (!directory) return []
+      const result = await client.command.list({ directory })
       return result.data ?? []
     },
     enabled: !!directory,
@@ -307,6 +408,70 @@ export function useArchiveSessionMutation(directory: string) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.sessions(url, directory) })
+    },
+  })
+}
+
+// OAuth authorize mutation
+export function useOAuthAuthorizeMutation() {
+  const client = useClient()
+
+  return useMutation({
+    mutationFn: async ({ providerID, method }: { providerID: string; method: number }) => {
+      const result = await client.provider.oauth.authorize({
+        providerID,
+        method,
+      })
+      return result.data
+    },
+  })
+}
+
+// OAuth callback mutation
+export function useOAuthCallbackMutation() {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      providerID,
+      method,
+      code,
+    }: {
+      providerID: string
+      method: number
+      code?: string
+    }) => {
+      const result = await client.provider.oauth.callback({
+        providerID,
+        method,
+        code,
+      })
+      return result.data
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.providers(url) })
+    },
+  })
+}
+
+// Set auth mutation (for API key auth)
+export function useSetAuthMutation() {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ providerID, apiKey }: { providerID: string; apiKey: string }) => {
+      const result = await client.auth.set({
+        providerID,
+        auth: { type: 'api', key: apiKey },
+      })
+      return result.data
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.providers(url) })
     },
   })
 }

@@ -1,30 +1,25 @@
-import * as React from 'react'
-import { type ReactNode } from 'react'
+import type { HTMLAttributes, ReactNode } from 'react'
 
 import { Message, MessageContent } from '@/components/ai-elements/message'
 import { cn } from '@/lib/utils'
 
-export interface ChatThreadProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ChatThreadProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode
 }
 
-export const ChatThread = React.forwardRef<HTMLDivElement, ChatThreadProps>(
-  ({ children, className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'flex h-full flex-col overflow-y-auto overscroll-contain scroll-smooth',
-          className,
-        )}
-        {...props}
-      >
-        <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 p-4">{children}</div>
-      </div>
-    )
-  },
-)
-ChatThread.displayName = 'ChatThread'
+export function ChatThread({ children, className, ...props }: ChatThreadProps) {
+  return (
+    <div
+      className={cn(
+        'flex h-full flex-col overflow-y-auto overscroll-contain scroll-smooth',
+        className,
+      )}
+      {...props}
+    >
+      <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 p-4">{children}</div>
+    </div>
+  )
+}
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'

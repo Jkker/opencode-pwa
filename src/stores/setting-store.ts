@@ -1,10 +1,21 @@
 import { createStore } from 'zustand-x'
 
+export interface ModelId {
+  providerID: string
+  modelID: string
+}
+
 export const settingStore = createStore(
   {
     serverURL: import.meta.env.VITE_OPENCODE_SERVER_URL ?? 'http://localhost:4096',
     autoAcceptEdits: false,
     healthy: undefined as boolean | undefined,
+    selectedModel: {
+      providerID: 'anthropic',
+      modelID: 'claude-sonnet-4-20250514',
+    } as ModelId,
+    selectedAgent: 'build',
+    selectedVariant: undefined as string | undefined,
   },
   {
     name: 'opencode-client-store',
@@ -15,4 +26,7 @@ export const settingStore = createStore(
   setServerURL: (url: string) => set('serverURL', url),
   setHealthy: (healthy: boolean | undefined) => set('healthy', healthy),
   toggleAutoAcceptEdits: () => set('autoAcceptEdits', (value) => !value),
+  setSelectedModel: (model: ModelId) => set('selectedModel', model),
+  setSelectedAgent: (agent: string) => set('selectedAgent', agent),
+  setSelectedVariant: (variant: string | undefined) => set('selectedVariant', variant),
 }))

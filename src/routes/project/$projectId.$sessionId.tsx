@@ -26,13 +26,11 @@ function SessionPage() {
   const { data: messagesData, isLoading: messagesLoading } = useMessagesQuery(sessionId)
   const { data: diffs } = useDiffQuery(sessionId)
 
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const endRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
+    endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messagesData])
 
   const messages = messagesData?.map((m) => m.info).filter(Boolean) ?? []
@@ -48,14 +46,14 @@ function SessionPage() {
   const hasChanges = diffs && diffs.length > 0
 
   const headerContent = (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 min-w-0">
       <span className="truncate font-medium">
         {sessionLoading ? <Skeleton className="h-4 w-32" /> : (session?.title ?? 'New Session')}
       </span>
       {hasChanges && (
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
           <FileCode className="size-3" />
-          {diffs.length} files
+          {diffs.length}
         </span>
       )}
     </div>
@@ -64,7 +62,7 @@ function SessionPage() {
   return (
     <HolyGrailLayout header={headerContent} sessionId={sessionId} directory={directory} showPrompt>
       {/* Messages */}
-      <ChatThread ref={scrollRef}>
+      <ChatThread>
         {isLoading ? (
           <>
             <MessageSkeleton />
@@ -77,6 +75,7 @@ function SessionPage() {
             <MessageItem key={message.id} message={message} parts={parts[message.id] ?? []} />
           ))
         )}
+        <div ref={endRef} />
       </ChatThread>
     </HolyGrailLayout>
   )

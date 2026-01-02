@@ -15,7 +15,6 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
-  Bot,
   Check,
   History,
   Terminal,
@@ -25,22 +24,13 @@ import {
 import { useRef, useEffect, useState } from 'react'
 import { Drawer } from 'vaul'
 
+import { SelectAgentDialog } from '@/components/ai-elements/select-agent-dialog'
+import { SelectModelDialog } from '@/components/ai-elements/select-model-dialog'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useSelectedModel } from '@/hooks/use-selected-model'
 import { useClient } from '@/lib/opencode/client'
-import {
-  useSendPromptMutation,
-  useAbortSessionMutation,
-  useProvidersQuery,
-  useAgentsQuery,
-} from '@/lib/opencode/queries'
+import { useSendPromptMutation, useAbortSessionMutation } from '@/lib/opencode/queries'
 import { cn } from '@/lib/utils'
 import { settingStore } from '@/stores/setting-store'
 
@@ -48,12 +38,6 @@ import { settingStore } from '@/stores/setting-store'
 interface CommandInfo {
   name: string
   description?: string
-}
-
-interface ProviderInfo {
-  id: string
-  name: string
-  models: { id: string; name: string }[]
 }
 
 // CodeMirror theme for chat input
@@ -362,38 +346,13 @@ export function PromptInput({
   const client = useClient(directory)
   const sendPrompt = useSendPromptMutation()
   const abortSession = useAbortSessionMutation()
-  const { data: providersData } = useProvidersQuery()
-  const { data: agentsData } = useAgentsQuery(directory)
   const autoAcceptEdits = settingStore.useState('autoAcceptEdits')
   const isMobile = useIsMobile()
 
-  // Parse providers
-  const providers: ProviderInfo[] =
-    providersData && 'all' in providersData
-      ? providersData.all.map((p) => ({
-          id: p.id,
-          name: p.name,
-          models: Object.values(p.models).map((m) => ({ id: m.id, name: m.name })),
-        }))
-      : []
-
-  // Parse agents
-  const agents = agentsData
-    ? Object.entries(agentsData).map(([name, agent]) => ({
-        name,
-        description: agent.description,
-      }))
-    : [
-        { name: 'code', description: 'Code assistant' },
-        { name: 'chat', description: 'General chat' },
-      ]
-
-  // Model/agent selection
-  const [selectedModel, setSelectedModel] = useState({
-    providerID: 'anthropic',
-    modelID: 'claude-sonnet-4-20250514',
-  })
-  const [selectedAgent, setSelectedAgent] = useState('code')
+  // Use hooks for model/agent selection from persistent store
+  const { selectedModel, selectedVariant, setModel, setVariant, displayName } = useSelectedModel()
+  const selectedAgent = settingStore.useValue('selectedAgent')
+  const setSelectedAgent = settingStore.actions.setSelectedAgent
 
   const isWorking = sendPrompt.isPending
   const canSend = value.trim().length > 0 && !isWorking
@@ -447,14 +406,9 @@ export function PromptInput({
       text: isShellCommand ? `Run this shell command: ${actualText}` : actualText,
       agent: selectedAgent,
       model: selectedModel,
+      variant: selectedVariant,
     })
   }
-
-  // Get model display name
-  const currentProvider = providers.find((p) => p.id === selectedModel.providerID)
-  const currentModel = currentProvider?.models?.find((m) => m.id === selectedModel.modelID)
-  const modelDisplayName =
-    currentModel?.name ?? selectedModel.modelID.split('-').slice(0, 2).join(' ')
 
   const editorContent = (
     <div className={cn('flex flex-col gap-2', className)}>
@@ -466,64 +420,27 @@ export function PromptInput({
         )}
       >
         {/* Model selector */}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7">
-                <Sparkles className="size-3" />
-                <span className="max-w-24 truncate">{modelDisplayName}</span>
-                <ChevronDown className="size-3" />
-              </Button>
-            }
-          />
-          <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
-            {providers.map((provider) => (
-              <div key={provider.id}>
-                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                  {provider.name}
-                </div>
-                {provider.models.map((model) => (
-                  <DropdownMenuItem
-                    key={model.id}
-                    onClick={() => setSelectedModel({ providerID: provider.id, modelID: model.id })}
-                    className={cn(
-                      selectedModel.providerID === provider.id &&
-                        selectedModel.modelID === model.id &&
-                        'bg-accent',
-                    )}
-                  >
-                    {model.name}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-              </div>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <SelectModelDialog
+          selectedModel={selectedModel}
+          onSelectModel={setModel}
+          selectedVariant={selectedVariant}
+          onSelectVariant={setVariant}
+          variant="popover"
+        >
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7">
+            <Sparkles className="size-3" />
+            <span className="max-w-24 truncate">{displayName}</span>
+            <ChevronDown className="size-3" />
+          </Button>
+        </SelectModelDialog>
 
         {/* Agent selector */}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7">
-                <Bot className="size-3" />
-                <span className="capitalize">{selectedAgent}</span>
-                <ChevronDown className="size-3" />
-              </Button>
-            }
-          />
-          <DropdownMenuContent align="start">
-            {agents.map((agent) => (
-              <DropdownMenuItem
-                key={agent.name}
-                onClick={() => setSelectedAgent(agent.name)}
-                className={cn(selectedAgent === agent.name && 'bg-accent')}
-              >
-                <span className="capitalize">{agent.name}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <SelectAgentDialog
+          selectedAgent={selectedAgent}
+          onSelectAgent={setSelectedAgent}
+          directory={directory}
+          variant="popover"
+        />
 
         {/* Auto-accept toggle */}
         <Button
