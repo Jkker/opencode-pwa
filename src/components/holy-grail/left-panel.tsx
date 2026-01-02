@@ -135,18 +135,15 @@ function ProjectItem({ project }: { project: Project }) {
       <CollapsibleContent>
         <div className="ml-4 mt-1 space-y-0.5 border-l pl-2">
           {/* New Session Button */}
-          <Link
-            to="/project/$projectId"
-            params={{ projectId: encodeURIComponent(project.worktree) }}
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-primary hover:bg-primary/10"
-            onClick={(e) => {
-              e.preventDefault()
-              createSession.mutate()
-            }}
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-primary hover:bg-primary/10"
+            onClick={() => createSession.mutate()}
+            disabled={createSession.isPending}
           >
             <Plus className="size-3" />
-            <span>New Session</span>
-          </Link>
+            <span>{createSession.isPending ? 'Creating...' : 'New Session'}</span>
+          </button>
 
           {isLoading ? (
             <>
