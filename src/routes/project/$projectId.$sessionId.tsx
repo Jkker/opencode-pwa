@@ -2,22 +2,14 @@
 // Shows the chat interface for a specific session.
 // Mobile-optimized with touch-friendly controls.
 import { createFileRoute } from '@tanstack/react-router'
-import { Loader2, FileCode, User, Bot, MoreVertical, Copy, Check } from 'lucide-react'
+import { Loader2, FileCode, User, Bot, Copy, Check } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 
 import type { Message, Part, TextPart, ToolPart } from '@/lib/opencode'
 
-import { PromptInputDrawer } from '@/components/chat/prompt-input'
+import { HolyGrailLayout } from '@/components/holy-grail/layout'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Separator } from '@/components/ui/separator'
-import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSessionQuery, useMessagesQuery, useDiffQuery } from '@/lib/opencode/queries'
@@ -59,43 +51,29 @@ function SessionPage() {
   const isLoading = sessionLoading || messagesLoading
   const hasChanges = diffs && diffs.length > 0
 
-  return (
-    <div className="flex h-full flex-col">
-      {/* Header */}
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger className="-ml-1 xl:hidden" />
-        <Separator orientation="vertical" className="mx-2 h-4 xl:hidden" />
-        <div className="flex flex-1 items-center gap-2 min-w-0">
-          <h1 className="truncate text-sm font-medium">
-            {sessionLoading ? <Skeleton className="h-4 w-32" /> : (session?.title ?? 'New Session')}
-          </h1>
-        </div>
-        <div className="flex items-center gap-1">
-          {hasChanges && (
-            <Button variant="ghost" size="sm" className="gap-1.5">
-              <FileCode className="size-3.5" />
-              <span className="text-xs">{diffs.length} files</span>
-            </Button>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="ghost" size="icon" className="size-8">
-                  <MoreVertical className="size-4" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Share session</DropdownMenuItem>
-              <DropdownMenuItem>Export</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">Archive</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
+  const headerContent = (
+    <div className="flex items-center gap-2">
+      <span className="truncate font-medium">
+        {sessionLoading ? <Skeleton className="h-4 w-32" /> : (session?.title ?? 'New Session')}
+      </span>
+      {hasChanges && (
+        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <FileCode className="size-3" />
+          {diffs.length} files
+        </span>
+      )}
+    </div>
+  )
 
+  return (
+    <HolyGrailLayout
+      header={headerContent}
+      sessionId={sessionId}
+      directory={directory}
+      showPrompt
+    >
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain">
+      <div ref={scrollRef} className="h-full overflow-y-auto overscroll-contain">
         <div className="mx-auto max-w-3xl">
           {isLoading ? (
             <div className="space-y-6 p-4">
@@ -105,7 +83,7 @@ function SessionPage() {
           ) : messages.length === 0 ? (
             <EmptyState />
           ) : (
-            <div className="space-y-1 py-4">
+            <div className="space-y-1 py-4 px-4">
               {messages.map((message) => (
                 <MessageItem key={message.id} message={message} parts={parts[message.id] ?? []} />
               ))}
@@ -113,10 +91,7 @@ function SessionPage() {
           )}
         </div>
       </div>
-
-      {/* Input - CodeMirror-based with drawer on mobile */}
-      <PromptInputDrawer sessionId={sessionId} directory={directory} />
-    </div>
+    </HolyGrailLayout>
   )
 }
 

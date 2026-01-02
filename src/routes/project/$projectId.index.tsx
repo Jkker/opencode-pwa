@@ -5,6 +5,7 @@ import { MessageSquare, Plus, Loader2 } from 'lucide-react'
 
 import type { Session } from '@/lib/opencode'
 
+import { HolyGrailLayout } from '@/components/holy-grail/layout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -43,21 +44,22 @@ function SessionIndexPage() {
   const projectName = directory.split('/').at(-1) ?? directory
 
   return (
-    <div className="flex h-full flex-col items-center justify-center p-4">
-      <div className="mx-auto w-full max-w-2xl space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-semibold">{projectName}</h1>
-          <p className="text-muted-foreground">Start a new session or continue an existing one</p>
-        </div>
+    <HolyGrailLayout header={<span className="font-semibold">{projectName}</span>} directory={directory} showPrompt={false}>
+      <div className="flex h-full flex-col items-center justify-center p-4">
+        <div className="mx-auto w-full max-w-2xl space-y-8">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-semibold">{projectName}</h1>
+            <p className="text-muted-foreground">Start a new session or continue an existing one</p>
+          </div>
 
-        {/* New Session Button */}
-        <div className="flex justify-center">
-          <Button
-            size="lg"
-            onClick={handleNewSession}
-            disabled={createSession.isPending}
-            className="gap-2"
+          {/* New Session Button */}
+          <div className="flex justify-center">
+            <Button
+              size="lg"
+              onClick={handleNewSession}
+              disabled={createSession.isPending}
+              className="gap-2"
           >
             {createSession.isPending ? (
               <Loader2 className="size-4 animate-spin" />
@@ -97,6 +99,7 @@ function SessionIndexPage() {
         </Card>
       </div>
     </div>
+    </HolyGrailLayout>
   )
 }
 
