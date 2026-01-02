@@ -1,7 +1,4 @@
 // OpenCode module exports
-export { projectStore } from '@/stores/project-store'
-export { sessionStore } from '../../stores/session-store'
-export { layoutStore } from '../../stores/layout-store'
 export { useOpencodeEvents } from './events'
 
 // Re-export SDK types

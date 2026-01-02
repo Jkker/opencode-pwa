@@ -637,5 +637,3 @@ export function PromptInputDrawer({ sessionId, directory, className }: PromptInp
     </Drawer.Root>
   )
 }
-
-export default PromptInputDrawer
