@@ -1,3 +1,5 @@
+[tools]
+opencode = "latest"
 # Mise configuration for Vite 8 Template
 # Manages Node.js and pnpm versions across all environments
 # See: https://mise.jdx.dev/
