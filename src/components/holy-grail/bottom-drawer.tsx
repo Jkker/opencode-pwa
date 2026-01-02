@@ -1,34 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Drawer } from 'vaul'
 
 import { cn } from '@/lib/utils'
 
-const useWindowHeightPixel = () => {
-  const [heightPx, setHeightPx] = useState(window.innerHeight)
-
-  useEffect(() => {
-    const updateHeight = () => {
-      setHeightPx(window.innerHeight)
-    }
-    window.addEventListener('resize', updateHeight)
-    return () => {
-      window.removeEventListener('resize', updateHeight)
-    }
-  }, [])
-
-  return heightPx
-}
-
 // display as drawer on mobile. TODO: display as a fixed bottom bar on desktop within the main content area
 export function BottomDrawer({ minH = '80px' }) {
-  const maxH = useWindowHeightPixel()
   const snapPoints = [minH, 0.9]
-  const [snap, setSnap] = useState<number | string | null>(minH)
+  const [snap, setSnap] = useState<number | string | null>(snapPoints[0])
   const [value, setValue] = useState('')
 
   const isCollapsed = snap === minH
-
-  const handleExpand = () => setSnap(maxH)
 
   return (
     <Drawer.Root
@@ -53,7 +34,6 @@ export function BottomDrawer({ minH = '80px' }) {
             placeholder="Start typing..."
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            // onFocus={handleExpand}
             className={cn('outline-none px-4 py-2', isCollapsed ? 'h-20' : 'h-[100ch]')}
             rows={isCollapsed ? 1 : undefined}
           />
