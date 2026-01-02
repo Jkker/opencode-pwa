@@ -10,7 +10,7 @@ import type { Message, Part, TextPart, ToolPart } from '@/lib/opencode'
 import { MessageResponse } from '@/components/ai-elements/message'
 import { ToolCard } from '@/components/ai-elements/tool'
 import { ChatMessage, ChatThread } from '@/components/chat/chat-thread'
-import { HolyGrailLayout } from '@/components/holy-grail/layout'
+import { HolyGrailLayout } from '@/components/layout/layout'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useDiffQuery, useMessagesQuery, useSessionQuery } from '@/lib/opencode/queries'
 

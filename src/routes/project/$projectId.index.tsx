@@ -5,7 +5,7 @@ import { MessageSquare, Plus, Loader2 } from 'lucide-react'
 
 import type { Session } from '@/lib/opencode'
 
-import { HolyGrailLayout } from '@/components/holy-grail/layout'
+import { HolyGrailLayout } from '@/components/layout/layout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -44,7 +44,11 @@ function SessionIndexPage() {
   const projectName = directory.split('/').at(-1) ?? directory
 
   return (
-    <HolyGrailLayout header={<span className="font-semibold">{projectName}</span>} directory={directory} showPrompt={false}>
+    <HolyGrailLayout
+      header={<span className="font-semibold">{projectName}</span>}
+      directory={directory}
+      showPrompt={false}
+    >
       <div className="flex h-full flex-col items-center justify-center p-4">
         <div className="mx-auto w-full max-w-2xl space-y-8">
           {/* Header */}
@@ -60,45 +64,45 @@ function SessionIndexPage() {
               onClick={handleNewSession}
               disabled={createSession.isPending}
               className="gap-2"
-          >
-            {createSession.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Plus className="size-4" />
-            )}
-            New Session
-          </Button>
-        </div>
+            >
+              {createSession.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
+              New Session
+            </Button>
+          </div>
 
-        {/* Sessions List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Recent Sessions</CardTitle>
-            <CardDescription>Continue where you left off</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            ) : sortedSessions?.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 py-8 text-center">
-                <MessageSquare className="size-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">No sessions yet</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {sortedSessions?.map((session) => (
-                  <SessionRow key={session.id} session={session} projectId={projectId} />
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {/* Sessions List */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Recent Sessions</CardTitle>
+              <CardDescription>Continue where you left off</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : sortedSessions?.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <MessageSquare className="size-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">No sessions yet</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {sortedSessions?.map((session) => (
+                    <SessionRow key={session.id} session={session} projectId={projectId} />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
     </HolyGrailLayout>
   )
 }

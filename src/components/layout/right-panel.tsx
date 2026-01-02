@@ -1,3 +1,4 @@
+// oxlint-disable only-export-components
 'use client'
 
 import { useParams } from '@tanstack/react-router'

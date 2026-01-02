@@ -32,6 +32,6 @@ jobs:
         with:
           experimental: true # [default: false] enable experimental features
           reshim: true # [default: false] run `mise reshim -f`
-     
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

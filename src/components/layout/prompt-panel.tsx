@@ -6,7 +6,15 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { bracketMatching, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language'
 import { EditorState } from '@codemirror/state'
 import { EditorView, keymap, placeholder as cmPlaceholder } from '@codemirror/view'
-import { GripHorizontal, Send, Square, Sparkles, Bot, ChevronDown, BrainCircuit } from 'lucide-react'
+import {
+  GripHorizontal,
+  Send,
+  Square,
+  Sparkles,
+  Bot,
+  ChevronDown,
+  BrainCircuit,
+} from 'lucide-react'
 import { useRef, useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -402,7 +410,9 @@ export function PromptPanel({ sessionId, directory }: PromptPanelProps) {
                   {provider.models.map((model) => (
                     <DropdownMenuItem
                       key={model.id}
-                      onClick={() => setSelectedModel({ providerID: provider.id, modelID: model.id })}
+                      onClick={() =>
+                        setSelectedModel({ providerID: provider.id, modelID: model.id })
+                      }
                       className={cn(
                         selectedModel.providerID === provider.id &&
                           selectedModel.modelID === model.id &&

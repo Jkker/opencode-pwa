@@ -64,9 +64,7 @@ export function LeftPanel({ onSettingsClick }: LeftPanelProps) {
               <p className="text-sm text-muted-foreground">No projects found</p>
             </div>
           ) : (
-            filteredProjects?.map((project) => (
-              <ProjectItem key={project.id} project={project} />
-            ))
+            filteredProjects?.map((project) => <ProjectItem key={project.id} project={project} />)
           )}
         </div>
       </ScrollArea>
