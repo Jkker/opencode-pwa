@@ -28,14 +28,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: jdx/mise-action@v3
         with:
-          node-version: '24'
-          cache: 'pnpm'
-
+          experimental: true # [default: false] enable experimental features
+          reshim: true # [default: false] run `mise reshim -f`
+     
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
