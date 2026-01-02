@@ -124,9 +124,14 @@ function MessageItem({ message, parts }: MessageItemProps) {
 
       {/* Tool calls */}
       {toolParts.length > 0 && (
-        <div className="space-y-2 mt-2">
+        <div className="space-y-2 mt-2 w-full">
           {toolParts.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} icon={<FileCode className="size-4" />} />
+            <ToolCard
+              key={tool.id}
+              tool={tool}
+              icon={<FileCode className="size-4" />}
+              className="w-full"
+            />
           ))}
         </div>
       )}
