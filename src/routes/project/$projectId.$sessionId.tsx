@@ -2,11 +2,12 @@
 // Shows the chat interface for a specific session.
 // Mobile-optimized with touch-friendly controls.
 import { createFileRoute } from '@tanstack/react-router'
-import { Loader2, FileCode, User, Bot, Copy, Check } from 'lucide-react'
+import { FileCode, User, Bot, Copy, Check } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 
 import type { Message, Part, TextPart, ToolPart } from '@/lib/opencode'
 
+import { ToolCard } from '@/components/ai-elements/tool'
 import { HolyGrailLayout } from '@/components/holy-grail/layout'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -14,9 +15,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSessionQuery, useMessagesQuery, useDiffQuery } from '@/lib/opencode/queries'
 import { cn } from '@/lib/utils'
-
-// Maximum characters to display in tool output preview
-const TOOL_OUTPUT_MAX_LENGTH = 500
 
 export const Route = createFileRoute('/project/$projectId/$sessionId')({
   component: SessionPage,
@@ -66,12 +64,7 @@ function SessionPage() {
   )
 
   return (
-    <HolyGrailLayout
-      header={headerContent}
-      sessionId={sessionId}
-      directory={directory}
-      showPrompt
-    >
+    <HolyGrailLayout header={headerContent} sessionId={sessionId} directory={directory} showPrompt>
       {/* Messages */}
       <div ref={scrollRef} className="h-full overflow-y-auto overscroll-contain">
         <div className="mx-auto max-w-3xl">
@@ -234,28 +227,7 @@ function MarkdownContent({ content }: { content: string }) {
 }
 
 function ToolCallItem({ tool }: { tool: ToolPart }) {
-  const state = tool.state
-  const isRunning = state.status === 'running'
-  const isCompleted = state.status === 'completed'
-  const isError = state.status === 'error'
-
-  return (
-    <div className="rounded-lg border bg-card">
-      <div className="flex items-center gap-2 border-b px-3 py-2">
-        <FileCode className="size-4 text-muted-foreground" />
-        <span className="text-sm font-medium">{tool.tool}</span>
-        {isRunning && <Loader2 className="size-3 animate-spin text-primary ml-auto" />}
-        {isCompleted && <Check className="size-3 text-green-500 ml-auto" />}
-        {isError && <span className="text-xs text-destructive ml-auto">Error</span>}
-      </div>
-      {isCompleted && 'output' in state && state.output && (
-        <pre className="p-3 text-xs overflow-x-auto max-h-32 overflow-y-auto bg-muted/50">
-          {state.output.slice(0, TOOL_OUTPUT_MAX_LENGTH)}
-          {state.output.length > TOOL_OUTPUT_MAX_LENGTH && '...'}
-        </pre>
-      )}
-    </div>
-  )
+  return <ToolCard tool={tool} icon={<FileCode className="size-4" />} />
 }
 
 function CopyButton({ text }: { text: string }) {
