@@ -79,4 +79,19 @@ export const sessionStore = createStore(
         [messageId]: parts.map((p) => (p.id === part.id ? part : p)),
       }
     }),
+
+  removePart: (messageId: string, partId: string) =>
+    set('parts', (prev) => {
+      const parts = prev[messageId] || []
+      return {
+        ...prev,
+        [messageId]: parts.filter((p) => p.id !== partId),
+      }
+    }),
+
+  updateSessionStatus: (sessionId: string, status: SessionStatus) =>
+    set('sessionStatus', (prev) => ({
+      ...prev,
+      [sessionId]: status,
+    })),
 }))

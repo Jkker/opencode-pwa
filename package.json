@@ -68,6 +68,7 @@
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
     "@playwright/mcp": "^0.0.54",
+    "@playwright/test": "^1.57.0",
     "@storybook/addon-a11y": "^10.1.11",
     "@storybook/addon-designs": "^11.1.0",
     "@storybook/addon-docs": "^10.1.11",

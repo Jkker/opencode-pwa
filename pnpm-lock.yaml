@@ -162,6 +162,9 @@ importers:
       '@playwright/mcp':
         specifier: ^0.0.54
         version: 0.0.54
+      '@playwright/test':
+        specifier: ^1.57.0
+        version: 1.57.0
       '@storybook/addon-a11y':
         specifier: ^10.1.11
         version: 10.1.11(storybook@10.1.11(@testing-library/dom@10.4.1)(prettier@3.7.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
@@ -1269,6 +1272,11 @@ packages:
 
   '@playwright/mcp@0.0.54':
     resolution: {integrity: sha512-5hhRPZp/r/2j120W4fqC8se5/Y9Y40jf8e+Vp2VX69IoIbq06cN0LRK7cdcNrjdMHDyDSL8pTWf7QfWexvTsOQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  '@playwright/test@1.57.0':
+    resolution: {integrity: sha512-6TyEnHgd6SArQO8UO2OMTxshln3QMWBtPGrOCgs3wVEmQmwyuNtB10IZMfmYDE0riwNR1cu4q+pPcxMVtaG3TA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -6557,6 +6565,10 @@ snapshots:
     dependencies:
       playwright: 1.58.0-alpha-2025-12-29
       playwright-core: 1.58.0-alpha-2025-12-29
+
+  '@playwright/test@1.57.0':
+    dependencies:
+      playwright: 1.57.0
 
   '@polka/url@1.0.0-next.29': {}
 
