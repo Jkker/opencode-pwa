@@ -1,10 +1,10 @@
-import { Send, Square, Copy, Check, User, Bot } from 'lucide-react'
+import { Send, Square, Copy, Check } from 'lucide-react'
 import * as React from 'react'
 import { type ReactNode, type ButtonHTMLAttributes } from 'react'
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { cn } from '@/lib/utils'
 
 interface ChatThreadProps {
@@ -22,34 +22,14 @@ export function ChatThread({ children }: ChatThreadProps) {
 interface ChatMessageProps {
   role: 'user' | 'assistant'
   content: ReactNode
-  timestamp?: string
-  actions?: ReactNode
 }
 
-export function ChatMessage({ role, content, timestamp, actions }: ChatMessageProps) {
+export function ChatMessage({ role, content }: ChatMessageProps) {
   const isUser = role === 'user'
 
   return (
-    <div className={cn('group relative flex gap-3 px-4 py-4', !isUser && 'bg-muted/30')}>
-      <Avatar className="size-7 shrink-0">
-        <AvatarFallback
-          className={cn('text-xs', isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary')}
-        >
-          {isUser ? <User className="size-3.5" /> : <Bot className="size-3.5" />}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 space-y-2 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium">{isUser ? 'You' : 'Assistant'}</span>
-          {timestamp && <span className="text-xs text-muted-foreground">{timestamp}</span>}
-        </div>
-        <div className="prose prose-sm dark:prose-invert max-w-none">{content}</div>
-        {actions && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {actions}
-          </div>
-        )}
-      </div>
+    <div className={cn('py-2', isUser && 'bg-primary/10')}>
+      <div className="prose prose-sm dark:prose-invert max-w-none">{content}</div>
     </div>
   )
 }
@@ -128,17 +108,11 @@ export function ActionButton({ tooltip, className, children, ...props }: ActionB
 }
 
 export function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = React.useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  const { copy, isCopied } = useCopyToClipboard()
 
   return (
-    <ActionButton tooltip={copied ? 'Copied!' : 'Copy'} onClick={handleCopy}>
-      {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+    <ActionButton tooltip={isCopied ? 'Copied!' : 'Copy'} onClick={() => void copy(text)}>
+      {isCopied ? <Check className="size-3" /> : <Copy className="size-3" />}
     </ActionButton>
   )
 }

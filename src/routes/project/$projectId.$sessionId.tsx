@@ -2,17 +2,14 @@
 // Shows the chat interface for a specific session.
 // Mobile-optimized with touch-friendly controls.
 import { createFileRoute } from '@tanstack/react-router'
-import { FileCode, User, Bot, Copy, Check } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { FileCode } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 
 import type { Message, Part, TextPart, ToolPart } from '@/lib/opencode'
 
 import { ToolCard } from '@/components/ai-elements/tool'
 import { HolyGrailLayout } from '@/components/holy-grail/layout'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSessionQuery, useMessagesQuery, useDiffQuery } from '@/lib/opencode/queries'
 import { cn } from '@/lib/utils'
 
@@ -69,14 +66,14 @@ function SessionPage() {
       <div ref={scrollRef} className="h-full overflow-y-auto overscroll-contain">
         <div className="mx-auto max-w-3xl">
           {isLoading ? (
-            <div className="space-y-6 p-4">
+            <div className="space-y-4 px-2 py-2">
               <MessageSkeleton />
               <MessageSkeleton isAssistant />
             </div>
           ) : messages.length === 0 ? (
             <EmptyState />
           ) : (
-            <div className="space-y-1 py-4 px-4">
+            <div className="px-2 py-2">
               {messages.map((message) => (
                 <MessageItem key={message.id} message={message} parts={parts[message.id] ?? []} />
               ))}
@@ -103,10 +100,8 @@ function EmptyState() {
 
 function MessageSkeleton({ isAssistant = false }: { isAssistant?: boolean }) {
   return (
-    <div className={cn('flex gap-3 p-4', isAssistant && 'bg-muted/50')}>
-      <Skeleton className="size-8 rounded-full shrink-0" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-4 w-24" />
+    <div className={cn('py-2', !isAssistant && 'bg-primary/10')}>
+      <div className="space-y-2">
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-3/4" />
       </div>
@@ -127,41 +122,22 @@ function MessageItem({ message, parts }: MessageItemProps) {
   const text = textParts.map((p) => p.text).join('')
 
   return (
-    <div className={cn('group relative flex gap-3 px-4 py-4', !isUser && 'bg-muted/30')}>
-      <Avatar className="size-7 shrink-0">
-        <AvatarFallback
-          className={cn('text-xs', isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary')}
-        >
-          {isUser ? <User className="size-3.5" /> : <Bot className="size-3.5" />}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 space-y-2 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium">{isUser ? 'You' : 'Assistant'}</span>
-          <span className="text-xs text-muted-foreground">{formatTime(message.time.created)}</span>
+    <div className={cn('py-2', isUser && 'bg-primary/10')}>
+      {/* Text content */}
+      {text && (
+        <div className="prose prose-sm dark:prose-invert max-w-none">
+          <MarkdownContent content={text} />
         </div>
+      )}
 
-        {/* Text content */}
-        {text && (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <MarkdownContent content={text} />
-          </div>
-        )}
-
-        {/* Tool calls */}
-        {toolParts.length > 0 && (
-          <div className="space-y-2">
-            {toolParts.map((tool) => (
-              <ToolCallItem key={tool.id} tool={tool} />
-            ))}
-          </div>
-        )}
-
-        {/* Action bar - always visible on mobile, hover on desktop */}
-        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-          <CopyButton text={text} />
+      {/* Tool calls */}
+      {toolParts.length > 0 && (
+        <div className="space-y-1.5 mt-2">
+          {toolParts.map((tool) => (
+            <ToolCard key={tool.id} tool={tool} icon={<FileCode className="size-4" />} />
+          ))}
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -224,39 +200,4 @@ function MarkdownContent({ content }: { content: string }) {
       })}
     </div>
   )
-}
-
-function ToolCallItem({ tool }: { tool: ToolPart }) {
-  return <ToolCard tool={tool} icon={<FileCode className="size-4" />} />
-}
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button variant="ghost" size="icon" className="size-6" onClick={handleCopy}>
-            {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
-          </Button>
-        }
-      />
-      <TooltipContent>{copied ? 'Copied!' : 'Copy'}</TooltipContent>
-    </Tooltip>
-  )
-}
-
-function formatTime(timestamp: number): string {
-  return new Intl.DateTimeFormat('en', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).format(timestamp)
 }

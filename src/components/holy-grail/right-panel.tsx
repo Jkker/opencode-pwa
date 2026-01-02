@@ -29,42 +29,78 @@ import {
 } from '@/components/ai-elements/queue'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { SwipeableTabPanel } from '@/components/ui/swipeable-tab-panel'
 import { useDiffQuery, useSessionQuery, useMessagesQuery } from '@/lib/opencode/queries'
 import { cn } from '@/lib/utils'
 
-export function RightPanel() {
+/** Right panel tab IDs */
+export const RIGHT_PANEL_TABS = ['status', 'changes', 'terminal'] as const
+export type RightPanelTab = (typeof RIGHT_PANEL_TABS)[number]
+
+export interface RightPanelProps {
+  /** Currently active tab */
+  activeTab?: RightPanelTab
+  /** Callback when tab changes */
+  onTabChange?: (tab: RightPanelTab) => void
+  /** Whether the panel is open (for swipe integration) */
+  isOpen?: boolean
+  /** Callback to close the panel */
+  onClose?: () => void
+  /** Callback to open the panel */
+  onOpen?: () => void
+  /** Whether swipe navigation is enabled */
+  swipeEnabled?: boolean
+}
+
+export function RightPanel({
+  activeTab: controlledActiveTab,
+  onTabChange,
+  isOpen = true,
+  onClose,
+  onOpen,
+  swipeEnabled = false,
+}: RightPanelProps) {
   const { sessionId } = useParams({ strict: false })
+  const [internalTab, setInternalTab] = useState<RightPanelTab>('status')
+
+  const activeTab = controlledActiveTab ?? internalTab
+  const handleTabChange = (tab: RightPanelTab) => {
+    onTabChange?.(tab)
+    if (!controlledActiveTab) setInternalTab(tab)
+  }
+
+  const tabs = [
+    {
+      id: 'status' as const,
+      label: 'Status',
+      icon: <ListTodo className="size-3.5" />,
+      content: <StatusTab sessionId={sessionId} />,
+    },
+    {
+      id: 'changes' as const,
+      label: 'Changes',
+      icon: <FileCode className="size-3.5" />,
+      content: <ChangesTab sessionId={sessionId} />,
+    },
+    {
+      id: 'terminal' as const,
+      label: 'Terminal',
+      icon: <Terminal className="size-3.5" />,
+      content: <TerminalTab />,
+    },
+  ]
 
   return (
-    <Tabs defaultValue="status" className="flex h-full flex-col">
-      <TabsList variant="line" className="shrink-0 border-b px-2">
-        <TabsTrigger value="status" className="gap-1.5">
-          <ListTodo className="size-3.5" />
-          Status
-        </TabsTrigger>
-        <TabsTrigger value="changes" className="gap-1.5">
-          <FileCode className="size-3.5" />
-          Changes
-        </TabsTrigger>
-        <TabsTrigger value="terminal" className="gap-1.5">
-          <Terminal className="size-3.5" />
-          Terminal
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="status" className="flex-1 overflow-hidden">
-        <StatusTab sessionId={sessionId} />
-      </TabsContent>
-
-      <TabsContent value="changes" className="flex-1 overflow-hidden">
-        <ChangesTab sessionId={sessionId} />
-      </TabsContent>
-
-      <TabsContent value="terminal" className="flex-1 overflow-hidden">
-        <TerminalTab />
-      </TabsContent>
-    </Tabs>
+    <SwipeableTabPanel
+      tabs={tabs}
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      isOpen={isOpen}
+      onClose={onClose}
+      onOpen={onOpen}
+      swipeEnabled={swipeEnabled}
+      className="h-full w-full"
+    />
   )
 }
 
@@ -87,8 +123,8 @@ function StatusTab({ sessionId }: StatusTabProps) {
   const maxTokens = 200000 // Claude's context window
 
   return (
-    <ScrollArea className="h-full">
-      <div className="space-y-4 p-3">
+    <ScrollArea className="h-full w-full">
+      <div className="w-full space-y-4 p-3">
         {/* Todos Section */}
         <Queue>
           <QueueSection defaultOpen>
@@ -160,7 +196,7 @@ function StatusTab({ sessionId }: StatusTabProps) {
             <dl className="space-y-1 text-xs">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Title</dt>
-                <dd className="truncate max-w-32">{session.title || 'Untitled'}</dd>
+                <dd className="max-w-32 truncate">{session.title || 'Untitled'}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Messages</dt>
@@ -190,7 +226,7 @@ function ChangesTab({ sessionId }: ChangesTabProps) {
 
   if (!sessionId) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+      <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
         Select a session to view changes
       </div>
     )
@@ -198,7 +234,7 @@ function ChangesTab({ sessionId }: ChangesTabProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-2 p-3">
+      <div className="w-full space-y-2 p-3">
         <Skeleton className="h-8 w-full" />
         <Skeleton className="h-8 w-full" />
         <Skeleton className="h-8 w-full" />
@@ -208,7 +244,7 @@ function ChangesTab({ sessionId }: ChangesTabProps) {
 
   if (!diffs || diffs.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
         <FileCode className="size-8" />
         <p className="text-sm">No changes in this session</p>
       </div>
@@ -218,34 +254,36 @@ function ChangesTab({ sessionId }: ChangesTabProps) {
   const activeDiff = diffs.find((d) => d.file === selectedFile) ?? diffs[0]
 
   return (
-    <div className="flex h-full flex-col">
-      {/* File list */}
-      <div className="flex shrink-0 gap-1 overflow-x-auto border-b p-2">
-        {diffs.map((diff) => {
-          const fileName = diff.file.split('/').at(-1) ?? diff.file
-          const isActive = diff.file === (selectedFile ?? diffs[0].file)
+    <div className="flex h-full w-full flex-col overflow-hidden">
+      {/* File list - horizontally scrollable */}
+      <ScrollArea className="w-full shrink-0 border-b">
+        <div className="flex gap-1 p-2">
+          {diffs.map((diff) => {
+            const fileName = diff.file.split('/').at(-1) ?? diff.file
+            const isActive = diff.file === (selectedFile ?? diffs[0].file)
 
-          return (
-            <button
-              key={diff.file}
-              onClick={() => setSelectedFile(diff.file)}
-              className={cn(
-                'flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs',
-                isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
-              )}
-            >
-              <FileCode className="size-3" />
-              <span>{fileName}</span>
-              <span className="text-green-500">+{diff.additions}</span>
-              <span className="text-red-500">-{diff.deletions}</span>
-            </button>
-          )
-        })}
-      </div>
+            return (
+              <button
+                key={diff.file}
+                onClick={() => setSelectedFile(diff.file)}
+                className={cn(
+                  'flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs',
+                  isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
+                )}
+              >
+                <FileCode className="size-3" />
+                <span>{fileName}</span>
+                <span className="text-green-500">+{diff.additions}</span>
+                <span className="text-red-500">-{diff.deletions}</span>
+              </button>
+            )
+          })}
+        </div>
+      </ScrollArea>
 
-      {/* Diff view */}
-      <ScrollArea className="flex-1">
-        <div className="font-mono text-xs">
+      {/* Diff view - vertically scrollable with horizontal overflow */}
+      <ScrollArea className="min-h-0 w-full flex-1">
+        <div className="min-w-full font-mono text-xs">
           {activeDiff && <UnifiedDiffView diff={activeDiff} />}
         </div>
       </ScrollArea>
@@ -290,7 +328,7 @@ function UnifiedDiffView({ diff }: UnifiedDiffViewProps) {
   }
 
   return (
-    <div>
+    <div className="w-max min-w-full">
       {diffLines.map((line, i) => (
         <div
           key={i}
@@ -312,7 +350,7 @@ function UnifiedDiffView({ diff }: UnifiedDiffViewProps) {
           </span>
           <pre
             className={cn(
-              'flex-1 px-2 py-0.5',
+              'flex-1 whitespace-pre px-2 py-0.5',
               line.type === 'added' && 'text-green-600',
               line.type === 'removed' && 'text-red-600',
             )}
@@ -346,16 +384,16 @@ function TerminalTab() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-black text-green-400">
-      <ScrollArea className="flex-1 p-2">
-        <pre className="whitespace-pre-wrap font-mono text-xs">{output.join('\n')}</pre>
-        <div className="flex items-center gap-1 font-mono text-xs">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-black text-green-400">
+      <ScrollArea className="min-h-0 w-full flex-1 p-2">
+        <pre className="w-full whitespace-pre-wrap font-mono text-xs">{output.join('\n')}</pre>
+        <div className="flex w-full items-center gap-1 font-mono text-xs">
           <span className="text-cyan-400">$</span>
           <input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent outline-none"
+            className="min-w-0 flex-1 bg-transparent outline-none"
             placeholder="Type a command..."
           />
         </div>

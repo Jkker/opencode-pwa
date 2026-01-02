@@ -67,7 +67,6 @@ describe('vitest-browser-react: Hook Testing', () => {
   test('useCopyToClipboard returns initial state', async () => {
     const { result } = await renderHook(useCopyToClipboard)
 
-    expect(result.current.text).toBeUndefined()
     expect(result.current.isCopied).toBe(false)
   })
 
@@ -80,11 +79,10 @@ describe('vitest-browser-react: Hook Testing', () => {
 
     let success = false
     await act(async () => {
-      success = await result.current.copy('Hello, World!')
+      success = await result.current.copy('Hello, World!', { silent: true })
     })
 
     expect(success).toBe(true)
-    expect(result.current.text).toBe('Hello, World!')
     expect(result.current.isCopied).toBe(true)
   })
 
@@ -97,11 +95,10 @@ describe('vitest-browser-react: Hook Testing', () => {
 
     let success = true
     await act(async () => {
-      success = await result.current.copy('Test')
+      success = await result.current.copy('Test', { silent: true })
     })
 
     expect(success).toBe(false)
-    expect(result.current.text).toBeUndefined()
     expect(result.current.isCopied).toBe(false)
   })
 
@@ -115,7 +112,7 @@ describe('vitest-browser-react: Hook Testing', () => {
     const { result, act } = await renderHook(useCopyToClipboard)
 
     await act(async () => {
-      await result.current.copy('Test', { timeout: 1000 })
+      await result.current.copy('Test', { timeout: 1000, silent: true })
     })
 
     expect(result.current.isCopied).toBe(true)

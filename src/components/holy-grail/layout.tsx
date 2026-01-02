@@ -3,15 +3,14 @@
 import type React from 'react'
 
 import { PanelLeft, PanelRight } from 'lucide-react'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useSwipeDrawer } from '@/hooks/use-swipe-drawer'
 
 import { LeftPanel } from './left-panel'
 import { PromptPanel } from './prompt-panel'
-import { RightPanel } from './right-panel'
+import { RightPanel, RIGHT_PANEL_TABS, type RightPanelTab } from './right-panel'
 import { SideDrawer } from './side-drawer'
 
 interface HolyGrailLayoutProps {
@@ -32,36 +31,39 @@ export function HolyGrailLayout({
   const isMobile = useIsMobile()
   const [leftOpen, setLeftOpen] = useState(false)
   const [rightOpen, setRightOpen] = useState(false)
+  const [rightActiveTab, setRightActiveTab] = useState<RightPanelTab>(RIGHT_PANEL_TABS[0])
   const [_settingsOpen, setSettingsOpen] = useState(false)
 
-  const handleSwipeLeft = useCallback(() => {
-    if (!leftOpen) setRightOpen(true)
-  }, [leftOpen])
+  /**
+   * Handle opening the right panel.
+   * On mobile, this is triggered by swipe RTL when panel is closed.
+   */
+  const handleOpenRightPanel = () => {
+    setRightActiveTab(RIGHT_PANEL_TABS[0])
+    setRightOpen(true)
+  }
 
-  const handleSwipeRight = useCallback(() => {
-    if (!rightOpen) setLeftOpen(true)
-  }, [rightOpen])
-
-  useSwipeDrawer({
-    onSwipeLeft: handleSwipeLeft,
-    onSwipeRight: handleSwipeRight,
-    enabled: isMobile && !leftOpen && !rightOpen,
-    threshold: 60,
-  })
+  /**
+   * Handle closing the right panel.
+   * On mobile, this is triggered by swipe LTR when on first tab.
+   */
+  const handleCloseRightPanel = () => {
+    setRightOpen(false)
+  }
 
   return (
-    <div className="h-dvh flex bg-background">
+    <div className="flex h-dvh bg-background">
       {/* Desktop Left Sidebar */}
       {!isMobile && (
-        <aside className="w-72 border-r border-border bg-sidebar flex-col max-h-dvh shrink-0 hidden md:flex">
+        <aside className="hidden w-72 max-h-dvh shrink-0 flex-col border-r border-border bg-sidebar md:flex">
           <LeftPanel onSettingsClick={() => setSettingsOpen(true)} />
         </aside>
       )}
 
       {/* Center Area - contains header, main content, and prompt panel */}
-      <div className="flex-1 flex flex-col h-dvh overflow-hidden">
+      <div className="flex h-dvh flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-30 border-b acrylic shrink-0 flex items-center justify-between h-(--header-height) px-4">
+        <header className="acrylic sticky top-0 z-30 flex h-(--header-height) shrink-0 items-center justify-between border-b px-4">
           <Button
             variant="ghost"
             size="icon"
@@ -96,8 +98,13 @@ export function HolyGrailLayout({
 
       {/* Desktop Right Sidebar */}
       {!isMobile && (
-        <aside className="w-80 border-l border-border bg-sidebar flex flex-col max-h-dvh shrink-0 hidden lg:flex">
-          <RightPanel />
+        <aside className="hidden w-80 max-h-dvh shrink-0 flex-col border-l border-border bg-sidebar lg:flex">
+          <RightPanel
+            activeTab={rightActiveTab}
+            onTabChange={setRightActiveTab}
+            isOpen={true}
+            swipeEnabled={false}
+          />
         </aside>
       )}
 
@@ -109,7 +116,14 @@ export function HolyGrailLayout({
           </SideDrawer>
 
           <SideDrawer open={rightOpen} onOpenChange={setRightOpen} side="right" title="Status">
-            <RightPanel />
+            <RightPanel
+              activeTab={rightActiveTab}
+              onTabChange={setRightActiveTab}
+              isOpen={rightOpen}
+              onClose={handleCloseRightPanel}
+              onOpen={handleOpenRightPanel}
+              swipeEnabled={true}
+            />
           </SideDrawer>
         </>
       )}

@@ -1,39 +1,37 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-export function useCopyToClipboard() {
-  const [text, setText] = useState<string>()
+interface CopyOptions {
+  timeout?: number
+  silent?: boolean
+}
 
-  const copy = async (
-    text: string,
-    { timeout = 2_000, withToast = false }: { timeout?: number; withToast?: boolean } = {},
-  ) => {
+export function useCopyToClipboard() {
+  const [isCopied, setIsCopied] = useState(false)
+
+  const copy = async (text: string, { timeout = 2_000, silent = false }: CopyOptions = {}) => {
     if (!navigator?.clipboard) {
-      console.warn('Clipboard not supported')
+      if (!silent) toast.error('Clipboard not supported')
       return false
     }
 
     try {
       await navigator.clipboard.writeText(text)
-      setText(text)
+      setIsCopied(true)
+      if (!silent) toast.success('Copied')
 
       if (timeout) {
-        setTimeout(() => {
-          setText(undefined)
-        }, timeout)
-      }
-
-      if (withToast) {
-        toast.success('Copied to clipboard')
+        setTimeout(() => setIsCopied(false), timeout)
       }
 
       return true
     } catch (error) {
       console.warn('Copy failed', error)
-      setText(undefined)
+      if (!silent) toast.error('Copy failed')
+      setIsCopied(false)
       return false
     }
   }
 
-  return { text, copy, isCopied: !!text }
+  return { copy, isCopied }
 }

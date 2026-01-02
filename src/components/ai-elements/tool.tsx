@@ -4,14 +4,11 @@ import type { ComponentProps, ReactNode } from 'react'
 import type { BundledLanguage } from 'shiki'
 
 import {
-  ArchiveIcon,
   CheckCircleIcon,
   ChevronDownIcon,
   CircleIcon,
   ClockIcon,
   CopyIcon,
-  DownloadIcon,
-  ShareIcon,
   WrenchIcon,
   XCircleIcon,
 } from 'lucide-react'
@@ -21,15 +18,12 @@ import type { ToolPart, ToolState } from '@/lib/opencode'
 
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { cn } from '@/lib/utils'
 
 import { CodeBlock } from './code-block'
 
-// Max height for scroll areas (in pixels)
-const MAX_CONTENT_HEIGHT = 256
 // Threshold for auto-collapsing output
 const OUTPUT_COLLAPSE_THRESHOLD = 500
 
@@ -65,11 +59,10 @@ function StatusIndicator({ status }: { status: ToolStatus }) {
 
 interface CopyButtonProps {
   text: string
-  label?: string
   className?: string
 }
 
-function CopyButton({ text, label = 'Copy', className }: CopyButtonProps) {
+function CopyButton({ text, className }: CopyButtonProps) {
   const { copy, isCopied } = useCopyToClipboard()
   return (
     <Tooltip>
@@ -92,7 +85,7 @@ function CopyButton({ text, label = 'Copy', className }: CopyButtonProps) {
           </Button>
         }
       />
-      <TooltipContent>{isCopied ? 'Copied!' : label}</TooltipContent>
+      <TooltipContent>{isCopied ? 'Copied!' : 'Copy'}</TooltipContent>
     </Tooltip>
   )
 }
@@ -107,59 +100,14 @@ function formatOutput(output: string): { text: string; language: BundledLanguage
   }
 }
 
-// Action button component
-interface ActionButtonProps {
-  icon: ReactNode
-  label: string
-  onClick?: () => void
-  className?: string
-}
-
-function ActionButton({ icon, label, onClick, className }: ActionButtonProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn('size-6', className)}
-            onClick={(e) => {
-              e.stopPropagation()
-              onClick?.()
-            }}
-          >
-            {icon}
-          </Button>
-        }
-      />
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  )
-}
-
 export interface ToolCardProps extends ComponentProps<'div'> {
   /** Tool part from OpenCode SDK */
   tool: ToolPart
   /** Icon to display (defaults to WrenchIcon) */
   icon?: ReactNode
-  /** Callback when archive action is triggered */
-  onArchive?: () => void
-  /** Callback when share action is triggered */
-  onShare?: () => void
-  /** Callback when download action is triggered */
-  onDownload?: () => void
 }
 
-export function ToolCard({
-  className,
-  tool,
-  icon,
-  onArchive,
-  onShare,
-  onDownload,
-  ...props
-}: ToolCardProps) {
+export function ToolCard({ className, tool, icon, ...props }: ToolCardProps) {
   const { state } = tool
   const status = state.status
 
@@ -202,46 +150,24 @@ export function ToolCard({
     >
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         {/* Header */}
-        <div className="flex items-center gap-2 px-3 py-2">
-          <CollapsibleTrigger className="flex flex-1 items-center gap-2 text-left">
-            <span className="text-muted-foreground">
+        <div className="flex items-start gap-2 px-2 py-1.5">
+          <CollapsibleTrigger className="flex flex-1 items-start gap-2 text-left min-w-0">
+            <span className="text-muted-foreground mt-0.5 shrink-0">
               {icon ?? <WrenchIcon className="size-4" />}
             </span>
-            <span className="flex-1 truncate font-medium text-sm">{displayTitle}</span>
+            <span className="flex-1 line-clamp-2 font-medium text-sm">{displayTitle}</span>
             <StatusIndicator status={status} />
             <ChevronDownIcon
               className={cn(
-                'size-4 text-muted-foreground transition-transform duration-200',
+                'size-4 text-muted-foreground transition-transform duration-200 shrink-0',
                 isOpen && 'rotate-180',
               )}
             />
           </CollapsibleTrigger>
 
-          {/* Actions */}
-          <div className="flex items-center gap-0.5 border-l pl-2">
-            {inputText && <CopyButton text={inputText} label="Copy input" />}
-            {outputText && <CopyButton text={outputText} label="Copy output" />}
-            {onDownload && (
-              <ActionButton
-                icon={<DownloadIcon className="size-3" />}
-                label="Download"
-                onClick={onDownload}
-              />
-            )}
-            {onShare && (
-              <ActionButton
-                icon={<ShareIcon className="size-3" />}
-                label="Share"
-                onClick={onShare}
-              />
-            )}
-            {onArchive && (
-              <ActionButton
-                icon={<ArchiveIcon className="size-3" />}
-                label="Archive"
-                onClick={onArchive}
-              />
-            )}
+          {/* Actions - single copy button for all content */}
+          <div className="flex items-center shrink-0">
+            <CopyButton text={outputText || inputText} />
           </div>
         </div>
 
@@ -251,28 +177,22 @@ export function ToolCard({
             {/* Input Section */}
             {inputData && (
               <Collapsible open={isInputOpen} onOpenChange={setIsInputOpen}>
-                <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted/50">
+                <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 px-2 py-1.5 text-left hover:bg-muted/50">
                   <span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
                     Input
                   </span>
-                  <div className="flex items-center gap-1">
-                    <CopyButton text={inputText} label="Copy input" className="size-5" />
-                    <ChevronDownIcon
-                      className={cn(
-                        'size-3 text-muted-foreground transition-transform duration-200',
-                        isInputOpen && 'rotate-180',
-                      )}
-                    />
-                  </div>
+                  <ChevronDownIcon
+                    className={cn(
+                      'size-3 text-muted-foreground transition-transform duration-200',
+                      isInputOpen && 'rotate-180',
+                    )}
+                  />
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="px-3 pb-3">
-                    <ScrollArea
-                      className="rounded-md bg-muted/50"
-                      style={{ maxHeight: MAX_CONTENT_HEIGHT }}
-                    >
+                  <div className="max-h-64 overflow-auto px-2 pb-2">
+                    <div className="rounded-md bg-muted/50">
                       <CodeBlock code={inputText} language="json" />
-                    </ScrollArea>
+                    </div>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -283,7 +203,7 @@ export function ToolCard({
               <Collapsible open={isOutputOpen} onOpenChange={setIsOutputOpen}>
                 <CollapsibleTrigger
                   className={cn(
-                    'flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted/50',
+                    'flex w-full items-center justify-between gap-2 px-2 py-1.5 text-left hover:bg-muted/50',
                     inputData && 'border-t',
                   )}
                 >
@@ -295,31 +215,21 @@ export function ToolCard({
                   >
                     {isError ? 'Error' : 'Output'}
                   </span>
-                  <div className="flex items-center gap-1">
-                    {(outputText || errorText) && (
-                      <CopyButton
-                        text={outputText || errorText || ''}
-                        label="Copy output"
-                        className="size-5"
-                      />
+                  <ChevronDownIcon
+                    className={cn(
+                      'size-3 text-muted-foreground transition-transform duration-200',
+                      isOutputOpen && 'rotate-180',
                     )}
-                    <ChevronDownIcon
-                      className={cn(
-                        'size-3 text-muted-foreground transition-transform duration-200',
-                        isOutputOpen && 'rotate-180',
-                      )}
-                    />
-                  </div>
+                  />
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="px-3 pb-3">
-                    <ScrollArea
+                  <div className="max-h-64 overflow-auto px-2 pb-2">
+                    <div
                       className={cn('rounded-md', isError ? 'bg-destructive/10' : 'bg-muted/50')}
-                      style={{ maxHeight: MAX_CONTENT_HEIGHT }}
                     >
                       {errorText && <div className="p-2 text-destructive text-sm">{errorText}</div>}
                       {outputRaw && <CodeBlock code={outputText} language={outputLang} />}
-                    </ScrollArea>
+                    </div>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
