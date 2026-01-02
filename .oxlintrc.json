@@ -116,6 +116,13 @@
       "rules": {
         "react/only-export-components": "off"
       }
+    },
+    // disable react hook errors for storybook files
+    {
+      "files": ["**/*.stories.*", "**/storybook/**/*.*"],
+      "rules": {
+        "react/rules-of-hooks": "off"
+      }
     }
   ],
   "ignorePatterns": [
