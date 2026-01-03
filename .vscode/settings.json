@@ -96,7 +96,7 @@
   "github.copilot.chat.agent.autoFix": true,
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {
-      "text": "Generate a commit message. Strictly adheres to Conventional Commits.\n\nStructure\n<type>(<scope>): <subject>\n\n<body>\n\nRequirements\n\n* Type: feat, fix, docs, style, refactor, perf, test, chore.\n* Subject: Use imperative mood (e.g., \"Add\" not \"Added\"), start capitalized, do not end with a period, limit to 50 characters.\n* Body: Separate from subject with a blank line. Explain *what* and *why*, not *how*.\n* Breaking Changes: Indicate with ! after type and BREAKING CHANGE: footer."
+      "text": "Generate a commit message. Strictly adheres to Conventional Commits.\n\nStructure\n<type>(<scope>): <subject>\n\n<body>\n\nRequirements\n\n* Type: feat, fix, docs, style, refactor, perf, test, chore.\n* Subject: Use imperative mood (e.g., \"Add\" not \"Added\"), start uncapitalized, do not end with a period, limit to 50 characters.\n* Body: Separate from subject with a blank line. Explain *what* and *why*, not *how*.\n* Breaking Changes: Indicate with ! after type and BREAKING CHANGE: footer."
     }
   ],
   "github.copilot.chat.generateTests.codeLens": true,
