@@ -45,6 +45,14 @@ export function HolyGrailLayout({
   }
 
   /**
+   * Handle opening the left panel.
+   * On mobile, this is triggered by swipe LTR when panel is closed.
+   */
+  const handleOpenLeftPanel = () => {
+    setLeftOpen(true)
+  }
+
+  /**
    * Handle closing the right panel.
    * On mobile, this is triggered by swipe LTR when on first tab.
    */
@@ -55,13 +63,13 @@ export function HolyGrailLayout({
   // Enable global swipe gestures on mobile to open/close drawers
   useSwipeDrawer({
     onSwipeLeft: () => {
-      if (isMobile && !rightOpen) {
+      if (!rightOpen) {
         handleOpenRightPanel()
       }
     },
     onSwipeRight: () => {
-      if (isMobile && !leftOpen) {
-        setLeftOpen(true)
+      if (!leftOpen) {
+        handleOpenLeftPanel()
       }
     },
     enabled: isMobile,
