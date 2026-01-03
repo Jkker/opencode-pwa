@@ -14,8 +14,6 @@ import {
   Square,
   ChevronDown,
   ChevronUp,
-  Sparkles,
-  Check,
   History,
   Terminal,
   Slash,
@@ -24,8 +22,6 @@ import {
 import { useRef, useEffect, useState } from 'react'
 import { Drawer } from 'vaul'
 
-import { SelectAgentDialog } from '@/components/ai-elements/select-agent-dialog'
-import { SelectModelDialog } from '@/components/ai-elements/select-model-dialog'
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useSelectedModel } from '@/hooks/use-selected-model'
@@ -419,40 +415,6 @@ export function PromptInput({
           isMobile && !showOptions && 'hidden',
         )}
       >
-        {/* Model selector */}
-        <SelectModelDialog
-          selectedModel={selectedModel}
-          onSelectModel={setModel}
-          selectedVariant={selectedVariant}
-          onSelectVariant={setVariant}
-          variant="popover"
-        >
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7">
-            <Sparkles className="size-3" />
-            <span className="max-w-24 truncate">{displayName}</span>
-            <ChevronDown className="size-3" />
-          </Button>
-        </SelectModelDialog>
-
-        {/* Agent selector */}
-        <SelectAgentDialog
-          selectedAgent={selectedAgent}
-          onSelectAgent={setSelectedAgent}
-          directory={directory}
-          variant="popover"
-        />
-
-        {/* Auto-accept toggle */}
-        <Button
-          variant={autoAcceptEdits ? 'default' : 'outline'}
-          size="sm"
-          className="gap-1.5 text-xs h-7"
-          onClick={settingStore.actions.toggleAutoAcceptEdits}
-        >
-          <Check className="size-3" />
-          <span className="hidden sm:inline">Auto-accept</span>
-        </Button>
-
         {/* History indicator */}
         {promptHistory.length > 0 && (
           <span className="text-xs text-muted-foreground flex items-center gap-1">

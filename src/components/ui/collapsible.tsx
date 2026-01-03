@@ -21,7 +21,7 @@ function CollapsibleContent({ className, ref, ...props }: CollapsibleContentProp
     <CollapsiblePrimitive.Panel
       ref={ref}
       className={cn(
-        'overflow-hidden transition-all data-[ending-style]:h-0 data-[starting-style]:h-0',
+        'overflow-hidden transition-all data-ending-style:h-0 data-starting-style:h-0',
         className,
       )}
       {...props}

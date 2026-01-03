@@ -14,7 +14,7 @@ export const Route = createFileRoute('/')({
   component: HomePage,
 })
 
-export function HomePage() {
+function HomePage() {
   const { data: projects, isLoading: projectsLoading } = useProjectsQuery()
   const { data: health, isLoading: healthLoading } = useHealthQuery()
 

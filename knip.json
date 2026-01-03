@@ -6,7 +6,6 @@
   },
   "entry": ["src/main.tsx"],
   "ignoreIssues": {
-    "src/components/ui/**/*": ["exports", "files"],
     "scripts/**/*": ["exports", "files"]
   },
   "ignoreDependencies": ["@playwright/mcp", "@types/*", "@upstash/*", "msw-storybook-addon", "zx"],
