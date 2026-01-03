@@ -1,15 +1,18 @@
 'use client'
 
-import { createContext, type HTMLAttributes, useContext, useEffect, useRef, useState } from 'react'
-import { type BundledLanguage } from 'shiki'
+import type { FileOptions, SupportedLanguages } from '@pierre/diffs/react'
+import type { HTMLAttributes } from 'react'
+
+import { File } from '@pierre/diffs/react'
+import { createContext, useContext } from 'react'
 
 import { CopyButton, type CopyButtonProps } from '@/components/ui/button'
-import { highlightCode } from '@/lib/shiki'
+import { createDefaultOptions, styleVariables } from '@/lib/pierre'
 import { cn } from '@/lib/utils'
 
 type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
   code: string
-  language: BundledLanguage
+  language: string
   showLineNumbers?: boolean
 }
 
@@ -29,33 +32,14 @@ export const CodeBlock = ({
   children,
   ...props
 }: CodeBlockProps) => {
-  const [html, setHtml] = useState<string>('')
-  const [darkHtml, setDarkHtml] = useState<string>('')
-  const mounted = useRef(false)
+  const options: Partial<FileOptions<undefined>> = {
+    ...createDefaultOptions('unified'),
+    disableLineNumbers: !showLineNumbers,
+    disableFileHeader: true,
+  }
 
-  useEffect(() => {
-    mounted.current = false
-    void highlightCode(code, language, showLineNumbers).then(([light, dark]) => {
-      if (!mounted.current) {
-        setHtml(light)
-        setDarkHtml(dark)
-        mounted.current = true
-      }
-      return null
-    })
-
-    return () => {
-      mounted.current = true // Use true to signal unmounted in this logic
-    }
-  }, [code, language, showLineNumbers])
-
-  // Reset mounted on unmount
-  useEffect(() => {
-    mounted.current = false
-    return () => {
-      mounted.current = true
-    }
-  }, [])
+  // Use provided language or fallback to text
+  const lang = (language || 'text') as SupportedLanguages
 
   return (
     <CodeBlockContext.Provider value={{ code }}>
@@ -68,15 +52,12 @@ export const CodeBlock = ({
       >
         <div className="relative">
           <div
-            className="overflow-auto dark:hidden [&>pre]:m-0 [&>pre]:bg-background! [&>pre]:p-4 [&>pre]:text-foreground! [&>pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: "this is needed."
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
-          <div
-            className="hidden overflow-auto dark:block [&>pre]:m-0 [&>pre]:bg-background! [&>pre]:p-4 [&>pre]:text-foreground! [&>pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: "this is needed."
-            dangerouslySetInnerHTML={{ __html: darkHtml }}
-          />
+            data-component="code-block"
+            className="overflow-auto [&_pre]:m-0 [&_pre]:!bg-background [&_pre]:p-4 [&_pre]:!text-foreground [&_pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
+            style={styleVariables}
+          >
+            <File file={{ name: 'code', contents: code, lang }} options={options} />
+          </div>
           {children && (
             <div className="absolute top-2 right-2 flex items-center gap-2">{children}</div>
           )}
