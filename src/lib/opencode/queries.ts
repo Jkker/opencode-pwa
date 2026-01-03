@@ -94,6 +94,8 @@ export const queryKeys = {
   permissions: (url: string, sessionId: string) =>
     ['opencode', 'permissions', url, sessionId] as const,
   commands: (url: string, directory: string) => ['opencode', 'commands', url, directory] as const,
+  ptyList: (url: string, directory: string) => ['opencode', 'pty', url, directory] as const,
+  pty: (url: string, ptyId: string) => ['opencode', 'pty', url, ptyId] as const,
 }
 
 // Health check
@@ -408,6 +410,106 @@ export function useArchiveSessionMutation(directory: string) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.sessions(url, directory) })
+    },
+  })
+}
+
+// PTY Types
+export interface Pty {
+  id: string
+  title: string
+  command: string
+  args: string[]
+  cwd: string
+  status: 'running' | 'exited'
+  pid: number
+}
+
+// PTY List
+export function usePtyListQuery(directory: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+
+  return useQuery({
+    queryKey: queryKeys.ptyList(url, directory ?? ''),
+    queryFn: async () => {
+      if (!directory) return []
+      try {
+        const result = await client.pty.list({ directory })
+        return (result.data ?? []) as Pty[]
+      } catch {
+        return []
+      }
+    },
+    enabled: !!directory,
+    retry: false,
+  })
+}
+
+// Create PTY mutation
+export function useCreatePtyMutation(directory: string) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (options?: { title?: string; command?: string; args?: string[] }) => {
+      const result = await client.pty.create({
+        directory,
+        title: options?.title,
+        command: options?.command,
+        args: options?.args,
+      })
+      return result.data as Pty | undefined
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ptyList(url, directory) })
+    },
+  })
+}
+
+// Update PTY mutation
+export function useUpdatePtyMutation(directory: string) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      ptyID,
+      title,
+      size,
+    }: {
+      ptyID: string
+      title?: string
+      size?: { rows: number; cols: number }
+    }) => {
+      const result = await client.pty.update({
+        ptyID,
+        directory,
+        title,
+        size,
+      })
+      return result.data
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ptyList(url, directory) })
+    },
+  })
+}
+
+// Remove PTY mutation
+export function useRemovePtyMutation(directory: string) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (ptyID: string) => {
+      await client.pty.remove({ ptyID, directory })
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ptyList(url, directory) })
     },
   })
 }
