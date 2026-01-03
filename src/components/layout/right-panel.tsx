@@ -28,6 +28,7 @@ import {
   QueueItemIndicator,
   QueueItemContent,
 } from '@/components/ai-elements/queue'
+import { Diff } from '@/components/pierre'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SwipeableTabPanel } from '@/components/ui/swipeable-tab-panel'
@@ -298,84 +299,23 @@ function ChangesTab({ sessionId }: ChangesTabProps) {
 
       {/* Diff view - vertically scrollable with horizontal overflow */}
       <ScrollArea className="min-h-0 w-full flex-1">
-        <div className="min-w-full font-mono text-xs">
-          {activeDiff && <UnifiedDiffView diff={activeDiff} />}
+        <div className="min-w-full">
+          {activeDiff && (
+            <Diff
+              before={{
+                name: activeDiff.file,
+                contents: activeDiff.before,
+              }}
+              after={{
+                name: activeDiff.file,
+                contents: activeDiff.after,
+              }}
+              diffStyle="unified"
+              className="font-mono text-xs"
+            />
+          )}
         </div>
       </ScrollArea>
-    </div>
-  )
-}
-
-interface UnifiedDiffViewProps {
-  diff: { file: string; before: string; after: string; additions: number; deletions: number }
-}
-
-function UnifiedDiffView({ diff }: UnifiedDiffViewProps) {
-  const beforeLines = diff.before.split('\n')
-  const afterLines = diff.after.split('\n')
-  const maxLines = Math.max(beforeLines.length, afterLines.length)
-
-  const diffLines: Array<{
-    type: 'unchanged' | 'added' | 'removed'
-    content: string
-    lineNum: number
-  }> = []
-
-  // Simple line-by-line diff: show removed lines first, then added lines for modified regions
-  for (let i = 0; i < maxLines; i++) {
-    const beforeLine = beforeLines[i]
-    const afterLine = afterLines[i]
-
-    if (beforeLine === afterLine) {
-      // Unchanged line
-      if (afterLine !== undefined) {
-        diffLines.push({ type: 'unchanged', content: afterLine, lineNum: i + 1 })
-      }
-    } else {
-      // Lines differ - show removed first, then added
-      if (beforeLine !== undefined) {
-        diffLines.push({ type: 'removed', content: beforeLine, lineNum: i + 1 })
-      }
-      if (afterLine !== undefined) {
-        diffLines.push({ type: 'added', content: afterLine, lineNum: i + 1 })
-      }
-    }
-  }
-
-  return (
-    <div className="w-max min-w-full">
-      {diffLines.map((line, i) => (
-        <div
-          key={i}
-          className={cn(
-            'flex',
-            line.type === 'added' && 'bg-green-500/10',
-            line.type === 'removed' && 'bg-red-500/10',
-          )}
-        >
-          <span
-            className={cn(
-              'w-10 shrink-0 border-r px-2 py-0.5 text-right',
-              line.type === 'added' &&
-                'bg-green-500/20 text-green-600 dark:text-green-300 dark:bg-green-500/30',
-              line.type === 'removed' &&
-                'bg-red-500/20 text-red-600 dark:text-red-300 dark:bg-red-500/30',
-              line.type === 'unchanged' && 'bg-muted text-muted-foreground',
-            )}
-          >
-            {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : line.lineNum}
-          </span>
-          <pre
-            className={cn(
-              'flex-1 whitespace-pre px-2 py-0.5',
-              // line.type === 'added' && 'text-green-600 ',
-              // line.type === 'removed' && 'text-red-600',
-            )}
-          >
-            {line.content}
-          </pre>
-        </div>
-      ))}
     </div>
   )
 }

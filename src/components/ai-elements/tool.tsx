@@ -1,7 +1,6 @@
 'use client'
 
 import type { ComponentProps, ReactNode } from 'react'
-import type { BundledLanguage } from 'shiki'
 
 import {
   CheckCircleIcon,
@@ -15,11 +14,10 @@ import { isValidElement, useState } from 'react'
 
 import type { ToolPart, ToolState } from '@/lib/opencode'
 
+import { Code } from '@/components/pierre'
 import { CopyButton } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
-
-import { CodeBlock } from './code-block'
 
 // Threshold for auto-collapsing output
 const OUTPUT_COLLAPSE_THRESHOLD = 500
@@ -54,13 +52,13 @@ function StatusIndicator({ status }: { status: ToolStatus }) {
   return <span className={cn('flex items-center gap-1', config.colorClass)}>{config.icon}</span>
 }
 
-function formatOutput(output: string): { text: string; language: BundledLanguage } {
+function formatOutput(output: string): { text: string; language: string } {
   // Try to parse as JSON for pretty printing
   try {
     const parsed = JSON.parse(output)
     return { text: JSON.stringify(parsed, null, 2), language: 'json' }
   } catch {
-    return { text: output, language: 'log' }
+    return { text: output, language: 'text' }
   }
 }
 
@@ -89,7 +87,7 @@ export function ToolCard({ className, tool, icon, ...props }: ToolCardProps) {
   const errorText = status === 'error' ? state.error : undefined
   const { text: outputText, language: outputLang } = outputRaw
     ? formatOutput(outputRaw)
-    : { text: '', language: 'log' as BundledLanguage }
+    : { text: '', language: 'text' }
 
   // Determine if output should be auto-collapsed (too long)
   const shouldCollapseOutput = outputText.length > OUTPUT_COLLAPSE_THRESHOLD
@@ -157,7 +155,13 @@ export function ToolCard({ className, tool, icon, ...props }: ToolCardProps) {
                 <CollapsibleContent>
                   <div className="max-h-64 overflow-auto px-2 pb-2">
                     <div className="rounded-md bg-muted/50">
-                      <CodeBlock code={inputText} language="json" />
+                      <Code
+                        file={{
+                          name: 'input.json',
+                          contents: inputText,
+                        }}
+                        className="text-xs"
+                      />
                     </div>
                   </div>
                 </CollapsibleContent>
@@ -194,7 +198,15 @@ export function ToolCard({ className, tool, icon, ...props }: ToolCardProps) {
                       className={cn('rounded-md', isError ? 'bg-destructive/10' : 'bg-muted/50')}
                     >
                       {errorText && <div className="p-2 text-destructive text-sm">{errorText}</div>}
-                      {outputRaw && <CodeBlock code={outputText} language={outputLang} />}
+                      {outputRaw && (
+                        <Code
+                          file={{
+                            name: `output.${outputLang}`,
+                            contents: outputText,
+                          }}
+                          className="text-xs"
+                        />
+                      )}
                     </div>
                   </div>
                 </CollapsibleContent>
@@ -262,7 +274,13 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
       Parameters
     </h4>
     <div className="rounded-md bg-muted/50">
-      <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
+      <Code
+        file={{
+          name: 'input.json',
+          contents: JSON.stringify(input, null, 2),
+        }}
+        className="text-xs"
+      />
     </div>
   </div>
 )
@@ -283,7 +301,15 @@ export const ToolOutput = ({ className, output, errorText, ...props }: ToolOutpu
     Output = output
   } else if (typeof output === 'string') {
     const { text, language } = formatOutput(output)
-    Output = <CodeBlock code={text} language={language} />
+    Output = (
+      <Code
+        file={{
+          name: `output.${language}`,
+          contents: text,
+        }}
+        className="text-xs"
+      />
+    )
   }
 
   return (
