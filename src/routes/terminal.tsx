@@ -31,11 +31,7 @@ function TerminalPage() {
         title: `Terminal ${tabs.length + 1}`,
       })
       if (pty) {
-        terminalStore.set('state', (state) => ({
-          ...state,
-          all: [...state.all, { id: pty.id, title: pty.title }],
-          active: pty.id,
-        }))
+        terminalStore.actions.addTerminal({ id: pty.id, title: pty.title })
       }
     } catch (error) {
       console.error('Failed to create terminal:', error)
@@ -45,27 +41,18 @@ function TerminalPage() {
   const handleCloseTerminal = async (id: string) => {
     try {
       await removePty.mutateAsync(id)
-      terminalStore.set('state', (state) => {
-        const all = state.all.filter((t) => t.id !== id)
-        let active = state.active
-        if (active === id) {
-          const index = state.all.findIndex((t) => t.id === id)
-          const previous = state.all[Math.max(0, index - 1)]
-          active = previous?.id ?? all[0]?.id ?? null
-        }
-        return { ...state, all, active }
-      })
+      terminalStore.actions.removeTerminal(id)
     } catch (error) {
       console.error('Failed to close terminal:', error)
     }
   }
 
   const handleSelectTerminal = (id: string) => {
-    terminalStore.set('active', id)
+    terminalStore.actions.setActive(id)
   }
 
   const handleUpdateTerminal = (pty: LocalPTY) => {
-    terminalStore.set('all', (all) => all.map((t) => (t.id === pty.id ? { ...t, ...pty } : t)))
+    terminalStore.actions.updateTerminal(pty)
   }
 
   // Create initial terminal on mount if none exist
