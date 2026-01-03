@@ -61,14 +61,15 @@ export function HolyGrailLayout({
   }
 
   // Enable global swipe gestures on mobile to open/close drawers
+  // Only respond to swipes when both drawers are closed to avoid conflicts
   useSwipeDrawer({
     onSwipeLeft: () => {
-      if (!rightOpen) {
+      if (!rightOpen && !leftOpen) {
         handleOpenRightPanel()
       }
     },
     onSwipeRight: () => {
-      if (!leftOpen) {
+      if (!leftOpen && !rightOpen) {
         handleOpenLeftPanel()
       }
     },
