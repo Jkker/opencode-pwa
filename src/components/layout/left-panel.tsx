@@ -1,15 +1,24 @@
 'use client'
 
 import { Link, useParams } from '@tanstack/react-router'
-import { Search, Settings, MessageSquare, ChevronRight, Plus, Minus, Folder } from 'lucide-react'
+import {
+  Search,
+  Settings,
+  MessageSquare,
+  ChevronRight,
+  Plus,
+  Minus,
+  Folder,
+  FilterIcon,
+  TreesIcon,
+  FolderTree,
+} from 'lucide-react'
 import { useState } from 'react'
 
 import type { Project, Session } from '@/lib/opencode'
 
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   useProjectsQuery,
@@ -19,6 +28,8 @@ import {
 } from '@/lib/opencode/queries'
 import { cn } from '@/lib/utils'
 import { projectStore } from '@/stores/project-store'
+
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '../ui/input-group'
 
 interface LeftPanelProps {
   onSettingsClick?: () => void
@@ -35,39 +46,40 @@ export function LeftPanel({ onSettingsClick }: LeftPanelProps) {
   })
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col overflow-y-auto p-2 gap-2">
       {/* Search Bar */}
-      <div className="border-b p-3">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search projects..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-      </div>
+
+      <InputGroup className="top-0 sticky acrylic">
+        <InputGroupInput
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <InputGroupAddon>
+          <Search />
+        </InputGroupAddon>
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton className="rounded-full" size="icon-xs">
+            <FolderTree />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
 
       {/* Projects & Sessions */}
-      <ScrollArea className="flex-1">
-        <div className="p-2">
-          {projectsLoading ? (
-            <div className="space-y-2 p-2">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-            </div>
-          ) : filteredProjects?.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <Folder className="size-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No projects found</p>
-            </div>
-          ) : (
-            filteredProjects?.map((project) => <ProjectItem key={project.id} project={project} />)
-          )}
+      {projectsLoading ? (
+        <div className="space-y-2 p-2">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
         </div>
-      </ScrollArea>
+      ) : filteredProjects?.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 py-8 text-center">
+          <Folder className="size-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">No projects found</p>
+        </div>
+      ) : (
+        filteredProjects?.map((project) => <ProjectItem key={project.id} project={project} />)
+      )}
 
       {/* Settings Button */}
       <div className="mt-auto border-t p-3">

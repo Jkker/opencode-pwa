@@ -169,9 +169,12 @@ export function formatRelativeTime(
   return relativeTimeFormat.format(-Math.floor(diff.seconds), 'second')
 }
 
-export function formatDuration(duration: Temporal.Duration | string): string {
+export function formatDuration(
+  duration: Temporal.Duration | string,
+  style: Intl.DurationFormatOptions = { style: 'long' },
+): string {
   const dur = typeof duration === 'string' ? Temporal.Duration.from(duration) : duration
-  return durationFormat.format(dur)
+  return new Intl.DurationFormat(undefined, style).format(dur)
 }
 
 export function calculateDuration(

@@ -8,7 +8,6 @@ import {
   ChevronDownIcon,
   CircleIcon,
   ClockIcon,
-  CopyIcon,
   WrenchIcon,
   XCircleIcon,
 } from 'lucide-react'
@@ -16,10 +15,8 @@ import { isValidElement, useState } from 'react'
 
 import type { ToolPart, ToolState } from '@/lib/opencode'
 
-import { Button } from '@/components/ui/button'
+import { CopyButton } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { cn } from '@/lib/utils'
 
 import { CodeBlock } from './code-block'
@@ -55,39 +52,6 @@ const STATUS_CONFIG: Record<ToolStatus, { label: string; icon: ReactNode; colorC
 function StatusIndicator({ status }: { status: ToolStatus }) {
   const config = STATUS_CONFIG[status]
   return <span className={cn('flex items-center gap-1', config.colorClass)}>{config.icon}</span>
-}
-
-interface CopyButtonProps {
-  text: string
-  className?: string
-}
-
-function CopyButton({ text, className }: CopyButtonProps) {
-  const { copy, isCopied } = useCopyToClipboard()
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn('size-6', className)}
-            onClick={(e) => {
-              e.stopPropagation()
-              void copy(text)
-            }}
-          >
-            {isCopied ? (
-              <CheckCircleIcon className="size-3 text-green-600" />
-            ) : (
-              <CopyIcon className="size-3" />
-            )}
-          </Button>
-        }
-      />
-      <TooltipContent>{isCopied ? 'Copied!' : 'Copy'}</TooltipContent>
-    </Tooltip>
-  )
 }
 
 function formatOutput(output: string): { text: string; language: BundledLanguage } {
@@ -150,13 +114,20 @@ export function ToolCard({ className, tool, icon, ...props }: ToolCardProps) {
     >
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         {/* Header */}
-        <div className="flex items-start gap-2 px-2 py-1.5">
-          <CollapsibleTrigger className="flex flex-1 items-start gap-2 text-left min-w-0">
-            <span className="text-muted-foreground mt-0.5 shrink-0">
-              {icon ?? <WrenchIcon className="size-4" />}
-            </span>
-            <span className="flex-1 line-clamp-2 font-medium text-sm">{displayTitle}</span>
+        <div className="flex items-center gap-2 px-2 py-1.5">
+          <CollapsibleTrigger
+            className="flex flex-1 items-center gap-2 text-left min-w-0 select-none"
+            nativeButton={false}
+            render={<div />}
+          >
+            {icon && <span className="text-muted-foreground mt-0.5 shrink-0">{icon}</span>}
             <StatusIndicator status={status} />
+            <span className="flex-1 line-clamp-2 font-medium text-sm">{displayTitle}</span>
+            {/* Actions - single copy button for all content */}
+            <div className="flex items-center shrink-0">
+              <CopyButton data={state} size="icon-xs" />
+              {/* download button */}
+            </div>
             <ChevronDownIcon
               className={cn(
                 'size-4 text-muted-foreground transition-transform duration-200 shrink-0',
@@ -164,11 +135,6 @@ export function ToolCard({ className, tool, icon, ...props }: ToolCardProps) {
               )}
             />
           </CollapsibleTrigger>
-
-          {/* Actions - single copy button for all content */}
-          <div className="flex items-center shrink-0">
-            <CopyButton text={outputText || inputText} />
-          </div>
         </div>
 
         {/* Content */}

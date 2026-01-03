@@ -8,7 +8,7 @@ import { playwright } from '@vitest/browser-playwright'
 import arkenv, { type } from 'arkenv'
 import BabelPluginReactCompiler from 'babel-plugin-react-compiler'
 import { defineConfig, loadEnv } from 'vite'
-
+import { VitePWA } from 'vite-plugin-pwa'
 export const Env = type({
   PORT: 'number.port = 5173',
   'VITE_API_URL?': 'string.url',
@@ -30,6 +30,37 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       react({ babel: { plugins: [BabelPluginReactCompiler] } }),
       arkenvVitePlugin(Env),
+      VitePWA({
+        manifest: {
+          name: 'OpenCode',
+          short_name: 'OpenCode',
+          description: 'AI-powered coding assistant for your development workflow',
+          start_url: '/',
+          display: 'standalone',
+          background_color: '#0a0a0a',
+          theme_color: '#0a0a0a',
+          orientation: 'any',
+          scope: '/',
+          icons: [
+            {
+              src: './favicon.svg',
+              sizes: 'any',
+              type: 'image/svg+xml',
+              purpose: 'any maskable',
+            },
+          ],
+          categories: ['developer', 'productivity', 'utilities'],
+          shortcuts: [
+            {
+              name: 'New Session',
+              short_name: 'New',
+              description: 'Start a new coding session',
+              url: '/',
+              icons: [{ src: '/icons/icon-192.svg', sizes: 'any' }],
+            },
+          ],
+        },
+      }),
     ],
     resolve: { tsconfigPaths: true },
     server: {

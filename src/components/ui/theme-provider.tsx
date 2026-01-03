@@ -1,40 +1,31 @@
 'use client'
 
-import { type } from 'arktype'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { ThemeProviderContext, Theme } from '@/hooks/use-theme'
+import { settingStore } from '@/stores/setting-store'
 
 export interface ThemeProviderProps {
   children: React.ReactNode
-  defaultTheme?: typeof Theme.infer
-  storageKey?: string
 }
-export function ThemeProvider({
-  children,
-  defaultTheme = 'system',
-  storageKey = 'theme',
-  ...props
-}: ThemeProviderProps) {
-  const isDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
 
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === 'undefined') return defaultTheme
-    const result = Theme(localStorage.getItem(storageKey))
-    return result instanceof type.errors ? defaultTheme : result
-  })
+function resolveTheme(theme: typeof Theme.infer, isDarkMode: boolean): 'light' | 'dark' {
+  return theme === 'system' ? (isDarkMode ? 'dark' : 'light') : theme
+}
+
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  const isDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+  const theme = settingStore.useValue('theme')
+  const setTheme = settingStore.actions.setTheme
 
   useEffect(() => {
     const root = window.document.documentElement
+    const resolved = resolveTheme(theme, isDarkMode)
 
     root.classList.remove('light', 'dark')
-
-    if (theme === 'system') {
-      return root.classList.add(isDarkMode ? 'dark' : 'light')
-    }
-
-    root.classList.add(theme)
+    root.classList.add(resolved)
+    root.style.colorScheme = resolved
   }, [theme, isDarkMode])
 
   return (
@@ -42,11 +33,8 @@ export function ThemeProvider({
       {...props}
       value={{
         theme,
-        resolvedTheme: theme === 'system' ? (isDarkMode ? 'dark' : 'light') : theme,
-        setTheme: (theme) => {
-          localStorage.setItem(storageKey, theme)
-          setTheme(theme)
-        },
+        resolvedTheme: resolveTheme(theme, isDarkMode),
+        setTheme,
       }}
     >
       {children}

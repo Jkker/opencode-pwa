@@ -3,6 +3,7 @@
 // Mobile-optimized with touch-friendly controls.
 import { createFileRoute } from '@tanstack/react-router'
 import { FileCode, MessageSquare } from 'lucide-react'
+import { Streamdown } from 'streamdown'
 
 import type { Part, TextPart, ToolPart } from '@/lib/opencode'
 
@@ -12,7 +13,7 @@ import {
   ConversationEmptyState,
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation'
-import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message'
+import { Message, MessageContent } from '@/components/ai-elements/message'
 import { ToolCard } from '@/components/ai-elements/tool'
 import { HolyGrailLayout } from '@/components/layout/layout'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -83,18 +84,17 @@ function SessionPage() {
                 <Message from={message.role} key={message.id}>
                   <MessageContent>
                     {/* Text content */}
-                    {text && <MessageResponse>{text}</MessageResponse>}
+                    {text && (
+                      <Streamdown className="size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                        {text}
+                      </Streamdown>
+                    )}
 
                     {/* Tool calls */}
                     {toolParts.length > 0 && (
                       <div className="mt-2 w-full space-y-2">
                         {toolParts.map((tool) => (
-                          <ToolCard
-                            key={tool.id}
-                            tool={tool}
-                            icon={<FileCode className="size-4" />}
-                            className="w-full"
-                          />
+                          <ToolCard key={tool.id} tool={tool} className="w-full" />
                         ))}
                       </div>
                     )}

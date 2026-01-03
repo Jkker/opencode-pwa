@@ -16,7 +16,7 @@ interface RootRouteContext {
 
 export const Route = createRootRouteWithContext<RootRouteContext>()({
   component: () => (
-    <ThemeProvider defaultTheme="system" storageKey="opencode-theme">
+    <ThemeProvider>
       <TooltipProvider>
         <CommandProvider>
           <Outlet />

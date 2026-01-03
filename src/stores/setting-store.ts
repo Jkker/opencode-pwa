@@ -1,5 +1,7 @@
 import { createStore } from 'zustand-x'
 
+import { Theme } from '@/hooks/use-theme'
+
 export interface ModelId {
   providerID: string
   modelID: string
@@ -16,6 +18,7 @@ export const settingStore = createStore(
     } as ModelId,
     selectedAgent: 'build',
     selectedVariant: undefined as string | undefined,
+    theme: 'system' as typeof Theme.infer,
   },
   {
     name: 'opencode-client-store',
@@ -29,4 +32,5 @@ export const settingStore = createStore(
   setSelectedModel: (model: ModelId) => set('selectedModel', model),
   setSelectedAgent: (agent: string) => set('selectedAgent', agent),
   setSelectedVariant: (variant: string | undefined) => set('selectedVariant', variant),
+  setTheme: (theme: typeof Theme.infer) => set('theme', theme),
 }))

@@ -40,6 +40,8 @@
   --sidebar-ring: oklch(0.708 0 0);
 
   --header-height: 4rem;
+
+  color-scheme: light;
 }
 
 .dark {
@@ -74,6 +76,8 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  color-scheme: dark;
 }
 
 @theme inline {

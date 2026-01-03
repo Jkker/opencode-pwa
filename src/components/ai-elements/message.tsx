@@ -4,8 +4,7 @@ import type { FileUIPart, UIMessage } from 'ai'
 import type { ComponentProps, HTMLAttributes, ReactElement } from 'react'
 
 import { ChevronLeftIcon, ChevronRightIcon, PaperclipIcon, XIcon } from 'lucide-react'
-import React, { createContext, memo, useContext, useEffect, useState, useMemo } from 'react'
-import { Streamdown } from 'streamdown'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { ButtonGroup, ButtonGroupText } from '@/components/ui/button-group'
@@ -158,12 +157,8 @@ export type MessageBranchContentProps = HTMLAttributes<HTMLDivElement>
 export const MessageBranchContent = ({ children, ...props }: MessageBranchContentProps) => {
   const { currentBranch, setBranches, branches } = useMessageBranch()
 
-  const childrenArray = useMemo(
-    () =>
-      React.Children.toArray(children).filter((child): child is ReactElement =>
-        React.isValidElement(child),
-      ),
-    [children],
+  const childrenArray = React.Children.toArray(children).filter((child): child is ReactElement =>
+    React.isValidElement(child),
   )
 
   // Use useEffect to update branches when they change
@@ -265,20 +260,6 @@ export const MessageBranchPage = ({ className, ...props }: MessageBranchPageProp
   )
 }
 
-export type MessageResponseProps = ComponentProps<typeof Streamdown>
-
-export const MessageResponse = memo(
-  ({ className, ...props }: MessageResponseProps) => (
-    <Streamdown
-      className={cn('size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0', className)}
-      {...props}
-    />
-  ),
-  (prevProps, nextProps) => prevProps.children === nextProps.children,
-)
-
-MessageResponse.displayName = 'MessageResponse'
-
 export type MessageAttachmentProps = HTMLAttributes<HTMLDivElement> & {
   data: FileUIPart
   className?: string
@@ -310,6 +291,7 @@ export function MessageAttachment({ data, className, onRemove, ...props }: Messa
                 e.stopPropagation()
                 onRemove()
               }}
+              type="button"
               variant="ghost"
             >
               <XIcon />
@@ -335,6 +317,7 @@ export function MessageAttachment({ data, className, onRemove, ...props }: Messa
                 e.stopPropagation()
                 onRemove()
               }}
+              type="button"
               variant="ghost"
             >
               <XIcon />

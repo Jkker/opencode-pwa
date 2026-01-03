@@ -96,25 +96,7 @@
   "github.copilot.chat.agent.autoFix": true,
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {
-      "text": "Use conventional commit format: type(scope): description."
-    },
-    {
-      "text": "Use imperative mood: 'Add feature' not 'Added feature'."
-    },
-    {
-      "text": "Keep subject line under 50 characters."
-    },
-    {
-      "text": "Use types: feat, fix, docs, style, refactor, perf, test, chore, ci."
-    },
-    {
-      "text": "Include scope when relevant (e.g., web, ui, auth)."
-    },
-    {
-      "text": "For additional details, use a well-structured body section."
-    },
-    {
-      "text": "Use bullet points (*) for clarity."
+      "text": "Generate a commit message. Strictly adheres to Conventional Commits.\n\nStructure\n<type>(<scope>): <subject>\n\n<body>\n\nRequirements\n\n* Type: feat, fix, docs, style, refactor, perf, test, chore.\n* Subject: Use imperative mood (e.g., \"Add\" not \"Added\"), start capitalized, do not end with a period, limit to 50 characters.\n* Body: Separate from subject with a blank line. Explain *what* and *why*, not *how*.\n* Breaking Changes: Indicate with ! after type and BREAKING CHANGE: footer."
     }
   ],
   "github.copilot.chat.generateTests.codeLens": true,
@@ -161,11 +143,11 @@
     "dns",
     "^(node:)?os$"
   ],
-  "typescript.tsdk": "./node_modules/typescript/lib",
   "typescript.preferences.importModuleSpecifier": "relative",
   "typescript.preferences.includePackageJsonAutoImports": "auto",
   "typescript.preferences.jsxAttributeCompletionStyle": "auto",
   "typescript.referencesCodeLens.enabled": true,
   "typescript.referencesCodeLens.showOnAllFunctions": true,
+  "typescript.tsdk": "./node_modules/typescript/lib",
   "typescript.updateImportsOnFileMove.enabled": "always"
 }

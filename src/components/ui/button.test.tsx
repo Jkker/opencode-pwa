@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { render, renderHook } from 'vitest-browser-react'
+import { render } from 'vitest-browser-react'
 
-import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { cn } from '@/lib/utils'
 
-import { Button } from './button'
+import { Button, CopyButton, PromiseButton } from './button'
 
 describe('vitest-browser-react: Component Testing', () => {
   test('renders button with default props', async () => {
@@ -63,67 +62,92 @@ describe('vitest-browser-react: Component Testing', () => {
   })
 })
 
-describe('vitest-browser-react: Hook Testing', () => {
-  test('useCopyToClipboard returns initial state', async () => {
-    const { result } = await renderHook(useCopyToClipboard)
-
-    expect(result.current.isCopied).toBe(false)
-  })
-
-  test('useCopyToClipboard copies text successfully', async () => {
+describe('CopyButton Component', () => {
+  beforeEach(() => {
     vi.stubGlobal('navigator', {
       clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
     })
-
-    const { result, act } = await renderHook(useCopyToClipboard)
-
-    let success = false
-    await act(async () => {
-      success = await result.current.copy('Hello, World!', { silent: true })
-    })
-
-    expect(success).toBe(true)
-    expect(result.current.isCopied).toBe(true)
   })
 
-  test('useCopyToClipboard handles clipboard errors', async () => {
-    vi.stubGlobal('navigator', {
-      clipboard: { writeText: vi.fn().mockRejectedValue(new Error('Copy failed')) },
-    })
-
-    const { result, act } = await renderHook(useCopyToClipboard)
-
-    let success = true
-    await act(async () => {
-      success = await result.current.copy('Test', { silent: true })
-    })
-
-    expect(success).toBe(false)
-    expect(result.current.isCopied).toBe(false)
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
-  test('useCopyToClipboard clears copied text after timeout', async () => {
-    vi.useFakeTimers()
+  test('renders CopyButton with default label', async () => {
+    const screen = await render(<CopyButton data="test" />)
+    const button = screen.getByRole('button', { name: 'Copy' })
 
-    vi.stubGlobal('navigator', {
-      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+    await expect.element(button).toBeVisible()
+  })
+
+  test('CopyButton copies text to clipboard', async () => {
+    const screen = await render(<CopyButton data="Hello, World!" />)
+    const button = screen.getByRole('button', { name: 'Copy' })
+
+    await button.click()
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('Hello, World!')
+    await expect.element(screen.getByRole('button', { name: 'Copied' })).toBeVisible()
+  })
+
+  test('CopyButton shows custom labels', async () => {
+    const screen = await render(<CopyButton data="test" label="Copy code" successLabel="Done!" />)
+
+    await expect.element(screen.getByRole('button', { name: 'Copy code' })).toBeVisible()
+
+    await screen.getByRole('button').click()
+
+    await expect.element(screen.getByRole('button', { name: 'Done!' })).toBeVisible()
+  })
+
+  test('CopyButton handles object data', async () => {
+    const data = { foo: 'bar' }
+    const screen = await render(<CopyButton data={data} />)
+    const button = screen.getByRole('button')
+
+    await button.click()
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(JSON.stringify(data, null, 2))
+  })
+})
+
+const throwTestError = async () => {
+  throw new Error('Test error')
+}
+
+describe('PromiseButton Component', () => {
+  test('renders PromiseButton', async () => {
+    const screen = await render(<PromiseButton onClick={async () => {}}>Click me</PromiseButton>)
+    const button = screen.getByRole('button', { name: 'Click me' })
+
+    await expect.element(button).toBeVisible()
+  })
+
+  test('PromiseButton shows loading state during async operation', async () => {
+    let resolvePromise: () => void
+    const promise = new Promise<void>((resolve) => {
+      resolvePromise = resolve
     })
 
-    const { result, act } = await renderHook(useCopyToClipboard)
+    const screen = await render(<PromiseButton onClick={() => promise}>Submit</PromiseButton>)
+    const button = screen.getByRole('button')
 
-    await act(async () => {
-      await result.current.copy('Test', { timeout: 1000, silent: true })
-    })
+    await button.click()
 
-    expect(result.current.isCopied).toBe(true)
+    // Button should show loading state (spinner replaces text)
+    await expect.element(screen.getByRole('status')).toBeVisible()
 
-    await act(() => {
-      vi.advanceTimersByTime(1000)
-    })
+    resolvePromise!()
+  })
 
-    expect(result.current.isCopied).toBe(false)
+  test('PromiseButton handles errors gracefully', async () => {
+    const screen = await render(<PromiseButton onClick={throwTestError}>Click me</PromiseButton>)
+    const button = screen.getByRole('button')
 
-    vi.useRealTimers()
+    await button.click()
+
+    // Button should be back to normal after error
+    await expect.element(screen.getByRole('button', { name: 'Click me' })).toBeVisible()
   })
 })
 
