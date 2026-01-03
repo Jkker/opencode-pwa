@@ -88,9 +88,7 @@ export function HolyGrailLayout({
         </header>
 
         {/* Main Content */}
-        <main className="relative flex-1 overflow-auto bg-gray-50 dark:bg-gray-900/50">
-          {children}
-        </main>
+        <main className="relative flex-1 overflow-auto">{children}</main>
 
         {/* Prompt Panel at Bottom */}
         {showPrompt && <PromptPanel sessionId={sessionId} directory={directory} />}
@@ -115,7 +113,13 @@ export function HolyGrailLayout({
             <LeftPanel onSettingsClick={() => setSettingsOpen(true)} />
           </SideDrawer>
 
-          <SideDrawer open={rightOpen} onOpenChange={setRightOpen} side="right" title="Status">
+          <SideDrawer
+            open={rightOpen}
+            onOpenChange={setRightOpen}
+            side="right"
+            title="Status"
+            className="w-screen sm:min-w-fit overflow-hidden"
+          >
             <RightPanel
               activeTab={rightActiveTab}
               onTabChange={setRightActiveTab}

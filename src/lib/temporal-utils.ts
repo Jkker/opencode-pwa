@@ -62,6 +62,8 @@ declare global {
   }
 }
 
+export const getTz = (): string => Temporal.Now.timeZoneId()
+
 const dateTimeFormats = {
   full: {
     dateStyle: 'full',
@@ -90,10 +92,6 @@ type DateTimeFormatStyle = keyof typeof dateTimeFormats
 
 const relativeTimeFormat = new Intl.RelativeTimeFormat(undefined, {
   numeric: 'auto',
-})
-
-const durationFormat = new Intl.DurationFormat(undefined, {
-  style: 'long',
 })
 
 const numberFormats = {
@@ -125,9 +123,6 @@ export function formatDateTime(
   timeZone?: string,
 ): string {
   const dt = typeof dateTime === 'string' ? Temporal.PlainDateTime.from(dateTime) : dateTime
-  if (dt instanceof Temporal.ZonedDateTime) {
-    return dt.toLocaleString(undefined, dateTimeFormats[style])
-  }
   const zoned =
     dt instanceof Temporal.ZonedDateTime
       ? dt

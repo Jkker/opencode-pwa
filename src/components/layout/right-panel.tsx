@@ -2,7 +2,7 @@
 'use client'
 
 import { useParams } from '@tanstack/react-router'
-import { FileCode, Terminal, ListTodo, BarChart3 } from 'lucide-react'
+import { FileCode, Terminal, ListTodo, BarChart3, PlusIcon, MinusIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import {
@@ -33,6 +33,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SwipeableTabPanel } from '@/components/ui/swipeable-tab-panel'
 import { useDiffQuery, useSessionQuery, useMessagesQuery } from '@/lib/opencode/queries'
 import { cn } from '@/lib/utils'
+
+import { Button } from '../ui/button'
 
 /** Right panel tab IDs */
 export const RIGHT_PANEL_TABS = ['status', 'changes', 'terminal'] as const
@@ -100,7 +102,6 @@ export function RightPanel({
       onClose={onClose}
       onOpen={onOpen}
       swipeEnabled={swipeEnabled}
-      className="h-full w-full"
     />
   )
 }
@@ -124,96 +125,94 @@ function StatusTab({ sessionId }: StatusTabProps) {
   const maxTokens = 200000 // Claude's context window
 
   return (
-    <ScrollArea className="h-full w-full">
-      <div className="w-full space-y-4 p-3">
-        {/* Todos Section */}
-        <Queue>
-          <QueueSection defaultOpen>
-            <QueueSectionTrigger>
-              <QueueSectionLabel
-                icon={<ListTodo className="size-4" />}
-                label="Tasks"
-                count={pendingTools.length + completedTools.length}
-              />
-            </QueueSectionTrigger>
-            <QueueSectionContent>
-              <QueueList>
-                {pendingTools.length === 0 && completedTools.length === 0 ? (
-                  <div className="py-4 text-center text-sm text-muted-foreground">
-                    No active tasks
-                  </div>
-                ) : (
-                  <>
-                    {pendingTools.map((tool) => (
-                      <QueueItem key={tool.id}>
-                        <div className="flex items-center gap-2">
-                          <QueueItemIndicator />
-                          <QueueItemContent>{tool.tool}</QueueItemContent>
-                        </div>
-                      </QueueItem>
-                    ))}
-                    {completedTools.slice(-5).map((tool) => (
-                      <QueueItem key={tool.id}>
-                        <div className="flex items-center gap-2">
-                          <QueueItemIndicator completed />
-                          <QueueItemContent completed>{tool.tool}</QueueItemContent>
-                        </div>
-                      </QueueItem>
-                    ))}
-                  </>
-                )}
-              </QueueList>
-            </QueueSectionContent>
-          </QueueSection>
-        </Queue>
-
-        {/* Stats Section */}
-        <div className="rounded-lg border bg-card p-3">
-          <div className="mb-3 flex items-center gap-2">
-            <BarChart3 className="size-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Context Usage</span>
-          </div>
-          <Context usedTokens={usedTokens} maxTokens={maxTokens}>
-            <ContextTrigger className="w-full justify-between" />
-            <ContextContent>
-              <ContextContentHeader />
-              <ContextContentBody>
-                <div className="space-y-2">
-                  <ContextInputUsage />
-                  <ContextOutputUsage />
-                  <ContextReasoningUsage />
-                  <ContextCacheUsage />
+    <div className="w-full space-y-4 p-3">
+      {/* Todos Section */}
+      <Queue>
+        <QueueSection defaultOpen>
+          <QueueSectionTrigger>
+            <QueueSectionLabel
+              icon={<ListTodo className="size-4" />}
+              label="Tasks"
+              count={pendingTools.length + completedTools.length}
+            />
+          </QueueSectionTrigger>
+          <QueueSectionContent>
+            <QueueList>
+              {pendingTools.length === 0 && completedTools.length === 0 ? (
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  No active tasks
                 </div>
-              </ContextContentBody>
-              <ContextContentFooter />
-            </ContextContent>
-          </Context>
-        </div>
-
-        {/* Session Info */}
-        {session && (
-          <div className="rounded-lg border bg-card p-3">
-            <h4 className="mb-2 text-sm font-medium">Session</h4>
-            <dl className="space-y-1 text-xs">
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Title</dt>
-                <dd className="max-w-32 truncate">{session.title || 'Untitled'}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Messages</dt>
-                <dd>{messagesData?.length ?? 0}</dd>
-              </div>
-              {session.summary && (
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Files changed</dt>
-                  <dd>{session.summary.files}</dd>
-                </div>
+              ) : (
+                <>
+                  {pendingTools.map((tool) => (
+                    <QueueItem key={tool.id}>
+                      <div className="flex items-center gap-2">
+                        <QueueItemIndicator />
+                        <QueueItemContent>{tool.tool}</QueueItemContent>
+                      </div>
+                    </QueueItem>
+                  ))}
+                  {completedTools.slice(-5).map((tool) => (
+                    <QueueItem key={tool.id}>
+                      <div className="flex items-center gap-2">
+                        <QueueItemIndicator completed />
+                        <QueueItemContent completed>{tool.tool}</QueueItemContent>
+                      </div>
+                    </QueueItem>
+                  ))}
+                </>
               )}
-            </dl>
-          </div>
-        )}
+            </QueueList>
+          </QueueSectionContent>
+        </QueueSection>
+      </Queue>
+
+      {/* Stats Section */}
+      <div className="rounded-lg border bg-card p-3">
+        <div className="mb-3 flex items-center gap-2">
+          <BarChart3 className="size-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Context Usage</span>
+        </div>
+        <Context usedTokens={usedTokens} maxTokens={maxTokens}>
+          <ContextTrigger className="w-full justify-between" />
+          <ContextContent>
+            <ContextContentHeader />
+            <ContextContentBody>
+              <div className="space-y-2">
+                <ContextInputUsage />
+                <ContextOutputUsage />
+                <ContextReasoningUsage />
+                <ContextCacheUsage />
+              </div>
+            </ContextContentBody>
+            <ContextContentFooter />
+          </ContextContent>
+        </Context>
       </div>
-    </ScrollArea>
+
+      {/* Session Info */}
+      {session && (
+        <div className="rounded-lg border bg-card p-3">
+          <h4 className="mb-2 text-sm font-medium">Session</h4>
+          <dl className="space-y-1 text-xs">
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Title</dt>
+              <dd className="max-w-32 truncate">{session.title || 'Untitled'}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Messages</dt>
+              <dd>{messagesData?.length ?? 0}</dd>
+            </div>
+            {session.summary && (
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Files changed</dt>
+                <dd>{session.summary.files}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -264,19 +263,34 @@ function ChangesTab({ sessionId }: ChangesTabProps) {
             const isActive = diff.file === (selectedFile ?? diffs[0].file)
 
             return (
-              <button
+              <Button
                 key={diff.file}
                 onClick={() => setSelectedFile(diff.file)}
-                className={cn(
-                  'flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs',
-                  isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
-                )}
+                variant={isActive ? 'default' : 'secondary'}
+                size="xs"
+                className={'font-mono'}
               >
                 <FileCode className="size-3" />
                 <span>{fileName}</span>
-                <span className="text-green-500">+{diff.additions}</span>
-                <span className="text-red-500">-{diff.deletions}</span>
-              </button>
+                <span
+                  className={cn(
+                    'items-center flex',
+                    isActive ? 'text-green-300 dark:text-green-700' : 'text-green-500',
+                  )}
+                >
+                  <PlusIcon />
+                  {diff.additions}
+                </span>
+                <span
+                  className={cn(
+                    'items-center flex',
+                    isActive ? 'text-red-300 dark:text-red-700' : 'text-red-500',
+                  )}
+                >
+                  <MinusIcon />
+                  {diff.deletions}
+                </span>
+              </Button>
             )
           })}
         </div>
@@ -342,8 +356,10 @@ function UnifiedDiffView({ diff }: UnifiedDiffViewProps) {
           <span
             className={cn(
               'w-10 shrink-0 border-r px-2 py-0.5 text-right',
-              line.type === 'added' && 'bg-green-500/20 text-green-600',
-              line.type === 'removed' && 'bg-red-500/20 text-red-600',
+              line.type === 'added' &&
+                'bg-green-500/20 text-green-600 dark:text-green-300 dark:bg-green-500/30',
+              line.type === 'removed' &&
+                'bg-red-500/20 text-red-600 dark:text-red-300 dark:bg-red-500/30',
               line.type === 'unchanged' && 'bg-muted text-muted-foreground',
             )}
           >
@@ -352,8 +368,8 @@ function UnifiedDiffView({ diff }: UnifiedDiffViewProps) {
           <pre
             className={cn(
               'flex-1 whitespace-pre px-2 py-0.5',
-              line.type === 'added' && 'text-green-600',
-              line.type === 'removed' && 'text-red-600',
+              // line.type === 'added' && 'text-green-600 ',
+              // line.type === 'removed' && 'text-red-600',
             )}
           >
             {line.content}

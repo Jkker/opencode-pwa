@@ -19,6 +19,7 @@ export const settingStore = createStore(
     selectedAgent: 'build',
     selectedVariant: undefined as string | undefined,
     theme: 'system' as typeof Theme.infer,
+    projectListMode: 'flat' as 'tree' | 'flat',
   },
   {
     name: 'opencode-client-store',
