@@ -2,8 +2,10 @@
 'use client'
 
 import { useParams } from '@tanstack/react-router'
-import { FileCode, Terminal, ListTodo, BarChart3, PlusIcon, MinusIcon } from 'lucide-react'
+import { FileCode, Terminal, ListTodo, BarChart3 } from 'lucide-react'
 import { useState } from 'react'
+
+import type { DiffStyle } from '@/components/diff'
 
 import {
   Context,
@@ -28,13 +30,12 @@ import {
   QueueItemIndicator,
   QueueItemContent,
 } from '@/components/ai-elements/queue'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { SessionReview } from '@/components/diff'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SwipeableTabPanel } from '@/components/ui/swipeable-tab-panel'
 import { useDiffQuery, useSessionQuery, useMessagesQuery } from '@/lib/opencode/queries'
-import { cn } from '@/lib/utils'
 
-import { Button } from '../ui/button'
+import { ScrollArea } from '../ui/scroll-area'
 
 /** Right panel tab IDs */
 export const RIGHT_PANEL_TABS = ['status', 'changes', 'terminal'] as const
@@ -222,7 +223,7 @@ interface ChangesTabProps {
 
 function ChangesTab({ sessionId }: ChangesTabProps) {
   const { data: diffs, isLoading } = useDiffQuery(sessionId)
-  const [selectedFile, setSelectedFile] = useState<string | null>(null)
+  const [diffStyle, setDiffStyle] = useState<DiffStyle>('unified')
 
   if (!sessionId) {
     return (
@@ -251,133 +252,7 @@ function ChangesTab({ sessionId }: ChangesTabProps) {
     )
   }
 
-  const activeDiff = diffs.find((d) => d.file === selectedFile) ?? diffs[0]
-
-  return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
-      {/* File list - horizontally scrollable */}
-      <ScrollArea className="w-full shrink-0 border-b">
-        <div className="flex gap-1 p-2">
-          {diffs.map((diff) => {
-            const fileName = diff.file.split('/').at(-1) ?? diff.file
-            const isActive = diff.file === (selectedFile ?? diffs[0].file)
-
-            return (
-              <Button
-                key={diff.file}
-                onClick={() => setSelectedFile(diff.file)}
-                variant={isActive ? 'default' : 'secondary'}
-                size="xs"
-                className={'font-mono'}
-              >
-                <FileCode className="size-3" />
-                <span>{fileName}</span>
-                <span
-                  className={cn(
-                    'items-center flex',
-                    isActive ? 'text-green-300 dark:text-green-700' : 'text-green-500',
-                  )}
-                >
-                  <PlusIcon />
-                  {diff.additions}
-                </span>
-                <span
-                  className={cn(
-                    'items-center flex',
-                    isActive ? 'text-red-300 dark:text-red-700' : 'text-red-500',
-                  )}
-                >
-                  <MinusIcon />
-                  {diff.deletions}
-                </span>
-              </Button>
-            )
-          })}
-        </div>
-      </ScrollArea>
-
-      {/* Diff view - vertically scrollable with horizontal overflow */}
-      <ScrollArea className="min-h-0 w-full flex-1">
-        <div className="min-w-full font-mono text-xs">
-          {activeDiff && <UnifiedDiffView diff={activeDiff} />}
-        </div>
-      </ScrollArea>
-    </div>
-  )
-}
-
-interface UnifiedDiffViewProps {
-  diff: { file: string; before: string; after: string; additions: number; deletions: number }
-}
-
-function UnifiedDiffView({ diff }: UnifiedDiffViewProps) {
-  const beforeLines = diff.before.split('\n')
-  const afterLines = diff.after.split('\n')
-  const maxLines = Math.max(beforeLines.length, afterLines.length)
-
-  const diffLines: Array<{
-    type: 'unchanged' | 'added' | 'removed'
-    content: string
-    lineNum: number
-  }> = []
-
-  // Simple line-by-line diff: show removed lines first, then added lines for modified regions
-  for (let i = 0; i < maxLines; i++) {
-    const beforeLine = beforeLines[i]
-    const afterLine = afterLines[i]
-
-    if (beforeLine === afterLine) {
-      // Unchanged line
-      if (afterLine !== undefined) {
-        diffLines.push({ type: 'unchanged', content: afterLine, lineNum: i + 1 })
-      }
-    } else {
-      // Lines differ - show removed first, then added
-      if (beforeLine !== undefined) {
-        diffLines.push({ type: 'removed', content: beforeLine, lineNum: i + 1 })
-      }
-      if (afterLine !== undefined) {
-        diffLines.push({ type: 'added', content: afterLine, lineNum: i + 1 })
-      }
-    }
-  }
-
-  return (
-    <div className="w-max min-w-full">
-      {diffLines.map((line, i) => (
-        <div
-          key={i}
-          className={cn(
-            'flex',
-            line.type === 'added' && 'bg-green-500/10',
-            line.type === 'removed' && 'bg-red-500/10',
-          )}
-        >
-          <span
-            className={cn(
-              'w-10 shrink-0 border-r px-2 py-0.5 text-right',
-              line.type === 'added' &&
-                'bg-green-500/20 text-green-600 dark:text-green-300 dark:bg-green-500/30',
-              line.type === 'removed' &&
-                'bg-red-500/20 text-red-600 dark:text-red-300 dark:bg-red-500/30',
-              line.type === 'unchanged' && 'bg-muted text-muted-foreground',
-            )}
-          >
-            {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : line.lineNum}
-          </span>
-          <pre
-            className={cn(
-              'flex-1 whitespace-pre px-2 py-0.5',
-              // line.type === 'added' && 'text-green-600 ',
-              // line.type === 'removed' && 'text-red-600',
-            )}
-          >
-            {line.content}
-          </pre>
-        </div>
-      ))}
-    </div>
-  )
+  return <SessionReview diffs={diffs} diffStyle={diffStyle} onDiffStyleChange={setDiffStyle} />
 }
 
 function TerminalTab() {
