@@ -2,14 +2,18 @@
 // Shows the chat interface for a specific session.
 // Mobile-optimized with touch-friendly controls.
 import { createFileRoute } from '@tanstack/react-router'
-import { FileCode } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { FileCode, MessageSquare } from 'lucide-react'
 
-import type { Message, Part, TextPart, ToolPart } from '@/lib/opencode'
+import type { Part, TextPart, ToolPart } from '@/lib/opencode'
 
-import { MessageResponse } from '@/components/ai-elements/message'
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton,
+} from '@/components/ai-elements/conversation'
+import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message'
 import { ToolCard } from '@/components/ai-elements/tool'
-import { ChatMessage, ChatThread } from '@/components/chat/chat-thread'
 import { HolyGrailLayout } from '@/components/layout/layout'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useDiffQuery, useMessagesQuery, useSessionQuery } from '@/lib/opencode/queries'
@@ -26,13 +30,6 @@ function SessionPage() {
   const { data: messagesData, isLoading: messagesLoading } = useMessagesQuery(sessionId)
   const { data: diffs } = useDiffQuery(sessionId)
 
-  const endRef = useRef<HTMLDivElement>(null)
-
-  // Auto-scroll to bottom on new messages
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messagesData])
-
   const messages = messagesData?.map((m) => m.info).filter(Boolean) ?? []
   const parts =
     messagesData?.reduce<Record<string, Part[]>>((acc, m) => {
@@ -46,12 +43,12 @@ function SessionPage() {
   const hasChanges = diffs && diffs.length > 0
 
   const headerContent = (
-    <div className="flex items-center gap-2 min-w-0">
+    <div className="flex min-w-0 items-center gap-2">
       <span className="truncate font-medium">
         {sessionLoading ? <Skeleton className="h-4 w-32" /> : (session?.title ?? 'New Session')}
       </span>
       {hasChanges && (
-        <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+        <span className="flex shrink-0 items-center gap-1 text-muted-foreground text-xs">
           <FileCode className="size-3" />
           {diffs.length}
         </span>
@@ -62,78 +59,66 @@ function SessionPage() {
   return (
     <HolyGrailLayout header={headerContent} sessionId={sessionId} directory={directory} showPrompt>
       {/* Messages */}
-      <ChatThread>
-        {isLoading ? (
-          <>
-            <MessageSkeleton />
-            <MessageSkeleton isAssistant />
-          </>
-        ) : messages.length === 0 ? (
-          <EmptyState />
-        ) : (
-          messages.map((message) => (
-            <MessageItem key={message.id} message={message} parts={parts[message.id] ?? []} />
-          ))
-        )}
-        <div ref={endRef} />
-      </ChatThread>
-    </HolyGrailLayout>
-  )
-}
+      <Conversation>
+        <ConversationContent>
+          {isLoading ? (
+            <>
+              <MessageSkeleton />
+              <MessageSkeleton isAssistant />
+            </>
+          ) : messages.length === 0 ? (
+            <ConversationEmptyState
+              icon={<MessageSquare className="size-12" />}
+              title="New Session"
+              description="Ask anything about your codebase. I can help you understand, modify, and debug your code."
+            />
+          ) : (
+            messages.map((message) => {
+              const messageParts = parts[message.id] ?? []
+              const textParts = messageParts.filter((p): p is TextPart => p.type === 'text')
+              const toolParts = messageParts.filter((p): p is ToolPart => p.type === 'tool')
+              const text = textParts.map((p) => p.text).join('')
 
-function EmptyState() {
-  return (
-    <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-      <div className="space-y-2">
-        <h2 className="text-lg font-medium">New Session</h2>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          Ask anything about your codebase. I can help you understand, modify, and debug your code.
-        </p>
-      </div>
-    </div>
+              return (
+                <Message from={message.role} key={message.id}>
+                  <MessageContent>
+                    {/* Text content */}
+                    {text && <MessageResponse>{text}</MessageResponse>}
+
+                    {/* Tool calls */}
+                    {toolParts.length > 0 && (
+                      <div className="mt-2 w-full space-y-2">
+                        {toolParts.map((tool) => (
+                          <ToolCard
+                            key={tool.id}
+                            tool={tool}
+                            icon={<FileCode className="size-4" />}
+                            className="w-full"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </MessageContent>
+                </Message>
+              )
+            })
+          )}
+        </ConversationContent>
+        <ConversationScrollButton />
+      </Conversation>
+    </HolyGrailLayout>
   )
 }
 
 function MessageSkeleton({ isAssistant = false }: { isAssistant?: boolean }) {
   return (
-    <ChatMessage role={isAssistant ? 'assistant' : 'user'} className="w-full">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-      </div>
-    </ChatMessage>
-  )
-}
-
-interface MessageItemProps {
-  message: Message
-  parts: Part[]
-}
-
-function MessageItem({ message, parts }: MessageItemProps) {
-  const textParts = parts.filter((p): p is TextPart => p.type === 'text')
-  const toolParts = parts.filter((p): p is ToolPart => p.type === 'tool')
-
-  const text = textParts.map((p) => p.text).join('')
-
-  return (
-    <ChatMessage role={message.role}>
-      {/* Text content */}
-      {text && <MessageResponse>{text}</MessageResponse>}
-
-      {/* Tool calls */}
-      {toolParts.length > 0 && (
-        <div className="space-y-2 mt-2 w-full">
-          {toolParts.map((tool) => (
-            <ToolCard
-              key={tool.id}
-              tool={tool}
-              icon={<FileCode className="size-4" />}
-              className="w-full"
-            />
-          ))}
+    <Message from={isAssistant ? 'assistant' : 'user'} className="w-full">
+      <MessageContent>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
         </div>
-      )}
-    </ChatMessage>
+      </MessageContent>
+    </Message>
   )
 }
