@@ -1,22 +1,37 @@
 'use client'
 
 import type { FileUIPart, UIMessage } from 'ai'
-import type { ComponentProps, HTMLAttributes, ReactElement } from 'react'
+import type { ComponentProps, HTMLAttributes, ReactElement, Ref } from 'react'
 
-import { ChevronLeftIcon, ChevronRightIcon, PaperclipIcon, XIcon } from 'lucide-react'
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import {
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  PaperclipIcon,
+  PencilIcon,
+  XIcon,
+} from 'lucide-react'
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 
+import { useStickyScroll } from '@/components/ai-elements/conversation'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup, ButtonGroupText } from '@/components/ui/button-group'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
+// Default max lines before truncation
+const DEFAULT_MAX_LINES = 6
+
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage['role']
+  ref?: Ref<HTMLDivElement>
 }
 
-export const Message = ({ className, from, ...props }: MessageProps) => (
+export const Message = ({ className, from, ref, ...props }: MessageProps) => (
   <div
+    ref={ref}
     className={cn(
       'group flex w-full max-w-[95%] flex-col gap-2',
       from === 'user' ? 'is-user ml-auto justify-end' : 'is-assistant',
@@ -351,3 +366,250 @@ export const MessageToolbar = ({ className, children, ...props }: MessageToolbar
     {children}
   </div>
 )
+
+// --- User Message Components ---
+
+export interface UserMessageProps extends HTMLAttributes<HTMLDivElement> {
+  /** The raw text content for copy/edit operations */
+  text: string
+  /** Whether the message should be collapsible (auto-detected if content exceeds maxLines) */
+  collapsible?: boolean
+  /** Maximum lines to show when collapsed */
+  maxLines?: number
+  /** Initial collapsed state (defaults to true if content exceeds maxLines) */
+  defaultCollapsed?: boolean
+  /** Callback when edit is requested */
+  onEdit?: (text: string) => void
+  /** Message ID for branching reference */
+  messageId?: string
+  /** Data attribute for sticky scroll tracking */
+  'data-user-message-id'?: string
+}
+
+export function UserMessage({
+  className,
+  children,
+  text,
+  collapsible,
+  maxLines = DEFAULT_MAX_LINES,
+  defaultCollapsed,
+  onEdit,
+  messageId,
+  ...props
+}: UserMessageProps) {
+  const messageRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [shouldCollapse, setShouldCollapse] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed ?? true)
+  const [copied, setCopied] = useState(false)
+  const stickyScroll = useStickyScroll()
+
+  // Register with sticky scroll context
+  useEffect(() => {
+    if (!messageId || !messageRef.current || !stickyScroll) return
+
+    stickyScroll.registerUserMessage(messageId, text, messageRef.current)
+
+    return () => {
+      stickyScroll.unregisterUserMessage(messageId)
+    }
+  }, [messageId, text, stickyScroll])
+
+  // Measure content height to determine if collapsible
+  useEffect(() => {
+    if (collapsible !== undefined) {
+      setShouldCollapse(collapsible)
+      return
+    }
+
+    const el = contentRef.current
+    if (!el) return
+
+    // Use line-height estimation (~1.5rem per line)
+    const lineHeight = Number.parseFloat(getComputedStyle(el).lineHeight) || 24
+    const maxHeight = lineHeight * maxLines
+    const isOverflowing = el.scrollHeight > maxHeight + lineHeight / 2
+
+    setShouldCollapse(isOverflowing)
+    if (defaultCollapsed === undefined) {
+      setIsCollapsed(isOverflowing)
+    }
+  }, [children, text, collapsible, maxLines, defaultCollapsed])
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  const handleEdit = () => {
+    onEdit?.(text)
+  }
+
+  const content = (
+    <div
+      ref={contentRef}
+      className={cn(
+        'size-full text-sm [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
+        shouldCollapse && isCollapsed && 'line-clamp-6',
+      )}
+      style={
+        shouldCollapse && isCollapsed
+          ? { WebkitLineClamp: maxLines, display: '-webkit-box', WebkitBoxOrient: 'vertical' }
+          : undefined
+      }
+    >
+      {children}
+    </div>
+  )
+
+  return (
+    <Message
+      ref={messageRef}
+      from="user"
+      className={cn('user-message', className)}
+      data-user-message-id={messageId}
+      {...props}
+    >
+      <MessageContent className="group/user-message relative">
+        {shouldCollapse ? (
+          <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
+            <div
+              className={cn(isCollapsed && 'line-clamp-6')}
+              style={
+                isCollapsed
+                  ? {
+                      WebkitLineClamp: maxLines,
+                      display: '-webkit-box',
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }
+                  : undefined
+              }
+            >
+              {content}
+            </div>
+            <CollapsibleContent>
+              {/* Hidden when collapsed, visible when expanded */}
+            </CollapsibleContent>
+            <div className="mt-2 flex items-center gap-1">
+              <CollapsibleTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 px-2 text-xs text-muted-foreground"
+                  />
+                }
+              >
+                <ChevronDownIcon
+                  className={cn('size-3.5 transition-transform', !isCollapsed && 'rotate-180')}
+                />
+                {isCollapsed ? 'Show more' : 'Show less'}
+              </CollapsibleTrigger>
+              <UserMessageActions
+                onCopy={handleCopy}
+                onEdit={onEdit ? handleEdit : undefined}
+                copied={copied}
+              />
+            </div>
+          </Collapsible>
+        ) : (
+          <>
+            {content}
+            <div className="mt-2 flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover/user-message:opacity-100">
+              <UserMessageActions
+                onCopy={handleCopy}
+                onEdit={onEdit ? handleEdit : undefined}
+                copied={copied}
+              />
+            </div>
+          </>
+        )}
+      </MessageContent>
+    </Message>
+  )
+}
+
+interface UserMessageActionsProps {
+  onCopy: () => void
+  onEdit?: () => void
+  copied: boolean
+}
+
+function UserMessageActions({ onCopy, onEdit, copied }: UserMessageActionsProps) {
+  return (
+    <div className="flex items-center gap-0.5">
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-7 text-muted-foreground hover:text-foreground"
+            />
+          }
+          onClick={onCopy}
+        >
+          <CopyIcon className="size-3.5" />
+          <span className="sr-only">Copy message</span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          <p>{copied ? 'Copied!' : 'Copy'}</p>
+        </TooltipContent>
+      </Tooltip>
+
+      {onEdit && (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="size-7 text-muted-foreground hover:text-foreground"
+              />
+            }
+            onClick={onEdit}
+          >
+            <PencilIcon className="size-3.5" />
+            <span className="sr-only">Edit message</span>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <p>Edit (branch)</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
+    </div>
+  )
+}
+
+// --- Sticky User Message (for sticky scroll header) ---
+
+export interface StickyUserMessageProps extends HTMLAttributes<HTMLDivElement> {
+  /** The truncated text preview */
+  text: string
+  /** Maximum characters to show in sticky header */
+  maxChars?: number
+}
+
+export function StickyUserMessage({
+  className,
+  text,
+  maxChars = 100,
+  ...props
+}: StickyUserMessageProps) {
+  const truncatedText = text.length > maxChars ? `${text.slice(0, maxChars).trim()}...` : text
+
+  return (
+    <div
+      className={cn(
+        'sticky-user-message bg-background/95 backdrop-blur-sm border-b px-4 py-2 text-sm text-muted-foreground',
+        'animate-in slide-in-from-top-2 fade-in-0 duration-200',
+        className,
+      )}
+      {...props}
+    >
+      <span className="line-clamp-1">{truncatedText}</span>
+    </div>
+  )
+}
