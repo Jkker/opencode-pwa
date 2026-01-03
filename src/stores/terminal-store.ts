@@ -16,9 +16,7 @@ export const terminalStore = createStore(
   },
   {
     name: 'opencode-terminals',
-    persist: {
-      enabled: true,
-    },
+    persist: true,
   },
 ).extendActions(({ set, get }) => ({
   addTerminal: (terminal: LocalPTY) =>
