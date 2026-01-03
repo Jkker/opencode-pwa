@@ -164,7 +164,10 @@ export function SessionReview({
                     />
                     <div className="flex min-w-0 flex-1 items-baseline gap-0.5 text-sm">
                       {diff.file.includes('/') && (
-                        <span className="truncate text-muted-foreground direction-rtl text-left">
+                        <span
+                          className="truncate text-muted-foreground text-left"
+                          style={{ direction: 'rtl' }}
+                        >
                           {getDirectory(diff.file)}
                         </span>
                       )}

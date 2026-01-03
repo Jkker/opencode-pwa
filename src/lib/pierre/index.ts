@@ -30,7 +30,8 @@ export function createDefaultOptions(
  * CSS custom properties for @pierre/diffs styling.
  */
 export const styleVariables: CSSProperties = {
-  ['--diffs-font-family' as string]: 'var(--font-sans), ui-monospace, monospace',
+  ['--diffs-font-family' as string]:
+    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
   ['--diffs-font-size' as string]: '13px',
   ['--diffs-line-height' as string]: '24px',
   ['--diffs-tab-size' as string]: '2',
