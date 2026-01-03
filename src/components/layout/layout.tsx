@@ -7,6 +7,7 @@ import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useSwipeDrawer } from '@/hooks/use-swipe-drawer'
 
 import { LeftPanel } from './left-panel'
 import { PromptPanel } from './prompt-panel'
@@ -50,6 +51,21 @@ export function HolyGrailLayout({
   const handleCloseRightPanel = () => {
     setRightOpen(false)
   }
+
+  // Enable global swipe gestures on mobile to open/close drawers
+  useSwipeDrawer({
+    onSwipeLeft: () => {
+      if (isMobile && !leftOpen) {
+        handleOpenRightPanel()
+      }
+    },
+    onSwipeRight: () => {
+      if (isMobile && !rightOpen) {
+        setLeftOpen(true)
+      }
+    },
+    enabled: isMobile,
+  })
 
   return (
     <div className="flex h-dvh bg-background">
