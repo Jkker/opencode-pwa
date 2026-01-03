@@ -76,7 +76,7 @@ export function Terminal({
     textarea.style.opacity = '0'
     document.body.appendChild(textarea)
     textarea.select()
-    // eslint-disable-next-line deprecation/deprecation -- fallback for legacy browser support
+    // Fallback using deprecated execCommand for legacy browser support
     const copied = document.execCommand('copy')
     document.body.removeChild(textarea)
     return copied
