@@ -237,50 +237,6 @@ export function useConfigQuery(directory: string | undefined) {
   })
 }
 
-// Providers with proper typing
-export function useProvidersQuery() {
-  const url = settingStore.useValue('serverURL')
-  const client = useClient()
-
-  return useQuery({
-    queryKey: queryKeys.providers(url),
-    queryFn: async () => {
-      const result = await client.provider.list()
-      return (result.data as ProvidersResponse | undefined) ?? null
-    },
-  })
-}
-
-// Provider auth methods
-export function useProviderAuthQuery() {
-  const url = settingStore.useValue('serverURL')
-  const client = useClient()
-
-  return useQuery({
-    queryKey: queryKeys.providerAuth(url),
-    queryFn: async () => {
-      const result = await client.provider.auth()
-      return (result.data as Record<string, ProviderAuthMethod[]> | undefined) ?? {}
-    },
-  })
-}
-
-// Agents with proper typing
-export function useAgentsQuery(directory: string | undefined) {
-  const url = settingStore.useValue('serverURL')
-  const client = useClient(directory)
-
-  return useQuery({
-    queryKey: queryKeys.agents(url, directory ?? ''),
-    queryFn: async () => {
-      if (!directory) return []
-      const result = await client.app.agents()
-      return (result.data as Agent[] | undefined) ?? []
-    },
-    enabled: !!directory,
-  })
-}
-
 // Commands
 export function useCommandsQuery(directory: string | undefined) {
   const url = settingStore.useValue('serverURL')
