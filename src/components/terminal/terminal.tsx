@@ -134,7 +134,7 @@ export function Terminal({
       data-testid="terminal-container"
       data-prevent-autofocus
       style={{ backgroundColor: getTerminalColors().background }}
-      className={cn('size-full select-text px-6 py-3 font-mono', className)}
+      className={cn('size-full select-text p-3 font-mono', className)}
     />
   )
 }

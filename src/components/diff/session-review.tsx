@@ -166,7 +166,7 @@ export function SessionReview({
               key={diff.file}
               open={isOpen}
               onOpenChange={() => toggleFile(diff.file)}
-              render={<></>}
+              // render={<></>}
             >
               {/* File Header */}
               <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 border-b p-2 text-left hover:bg-muted/50 sticky top-0 z-20 acrylic">

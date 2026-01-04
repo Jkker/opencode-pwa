@@ -106,6 +106,7 @@ export class TerminalController {
       // Create terminal instance
       this.terminal = new GhosttyTerminal({
         cursorBlink: true,
+        cursorStyle: 'bar',
         fontSize: 14,
         fontFamily: 'JetBrainsMonoNerdFont, monospace',
         allowTransparency: true,
