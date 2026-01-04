@@ -10,7 +10,7 @@
  * - Only one terminal instance is created (React Strict Mode safe)
  * - Terminal controller lifecycle is properly managed
  */
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { render } from 'vitest-browser-react'
 
 import { Terminal } from '../terminal'

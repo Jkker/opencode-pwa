@@ -30,7 +30,7 @@ export async function isServerAvailable(serverURL: string): Promise<boolean> {
     })
     if (!response.ok) return false
     const data = (await response.json()) as { healthy: boolean }
-    return data.healthy === true
+    return data.healthy
   } catch {
     return false
   }
