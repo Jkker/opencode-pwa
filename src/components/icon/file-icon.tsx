@@ -1,5 +1,4 @@
-import { useMemo } from 'react'
-
+// oxlint-disable no-unsafe-type-assertion
 import { cn } from '@/lib/utils'
 
 import type { IconName } from './types'
@@ -7,15 +6,19 @@ import type { IconName } from './types'
 import sprite from './sprite.svg'
 
 export interface FileIconProps extends React.SVGProps<SVGSVGElement> {
-  node: { path: string; type: 'file' | 'directory' }
+  uri: string
+  type?: 'file' | 'directory'
   expanded?: boolean
 }
 
-export function FileIcon({ node, expanded = false, className, ...rest }: FileIconProps) {
-  const name = useMemo(
-    () => chooseIconName(node.path, node.type, expanded),
-    [node.path, node.type, expanded],
-  )
+export function FileIcon({
+  uri,
+  type = 'file',
+  expanded = false,
+  className,
+  ...rest
+}: FileIconProps) {
+  const name = chooseIconName(uri, type, expanded)
   return (
     <svg data-component="file-icon" className={cn(className)} {...rest}>
       <use href={`${sprite}#${name}`} />
@@ -554,14 +557,10 @@ const dottedSuffixesDesc = (name: string) => {
   const out = new Set<string>()
   out.add(n) // allow exact whole-name "extensions" like "dockerfile"
   for (const i of idxs) if (i + 1 < n.length) out.add(n.slice(i + 1))
-  return Array.from(out).sort((a, b) => b.length - a.length) // longest first
+  return Array.from(out).toSorted((a, b) => b.length - a.length) // longest first
 }
 
-export function chooseIconName(
-  path: string,
-  type: 'directory' | 'file',
-  expanded: boolean,
-): IconName {
+function chooseIconName(path: string, type: 'directory' | 'file', expanded: boolean): IconName {
   const base = basenameOf(path)
   const baseLower = base.toLowerCase()
 

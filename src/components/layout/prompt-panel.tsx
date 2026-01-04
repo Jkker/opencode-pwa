@@ -6,33 +6,13 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { bracketMatching, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language'
 import { EditorState } from '@codemirror/state'
 import { EditorView, keymap, placeholder as cmPlaceholder } from '@codemirror/view'
-import {
-  GripHorizontal,
-  Send,
-  Square,
-  Sparkles,
-  Bot,
-  ChevronDown,
-  BrainCircuit,
-} from 'lucide-react'
+import { Send, Square } from 'lucide-react'
 import { useRef, useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useClient } from '@/lib/opencode/client'
-import {
-  useSendPromptMutation,
-  useAbortSessionMutation,
-  useProvidersQuery,
-  useAgentsQuery,
-} from '@/lib/opencode/queries'
+import { useSendPromptMutation, useAbortSessionMutation } from '@/lib/opencode/queries'
 import { cn } from '@/lib/utils'
 
 // Minimum and maximum row heights
@@ -151,39 +131,13 @@ function createFileMentionCompletions(fetchFiles: (query: string) => Promise<str
 export function PromptPanel({ sessionId, directory }: PromptPanelProps) {
   const [value, setValue] = useState('')
   const [manualHeight, setManualHeight] = useState<number | null>(null)
-  const [isResizing, setIsResizing] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
-  const resizeStartY = useRef(0)
-  const resizeStartHeight = useRef(0)
 
   const client = useClient(directory)
   const sendPrompt = useSendPromptMutation()
   const abortSession = useAbortSessionMutation()
-  const { data: providersData } = useProvidersQuery()
-  const { data: agentsData } = useAgentsQuery(directory)
   const isMobile = useIsMobile()
-
-  // Parse providers
-  const providers: ProviderInfo[] =
-    providersData && 'all' in providersData
-      ? providersData.all.map((p) => ({
-          id: p.id,
-          name: p.name,
-          models: Object.values(p.models).map((m) => ({ id: m.id, name: m.name })),
-        }))
-      : []
-
-  // Parse agents
-  const agents = agentsData
-    ? Object.entries(agentsData).map(([name, agent]) => ({
-        name,
-        description: agent.description,
-      }))
-    : [
-        { name: 'code', description: 'Code assistant' },
-        { name: 'chat', description: 'General chat' },
-      ]
 
   // Selection state
   const [selectedModel, setSelectedModel] = useState({
@@ -332,154 +286,9 @@ export function PromptPanel({ sessionId, directory }: PromptPanelProps) {
     }
   }, [value])
 
-  // Resize handle drag
-  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault()
-    setIsResizing(true)
-    resizeStartY.current = 'touches' in e ? e.touches[0].clientY : e.clientY
-    resizeStartHeight.current = currentHeight
-  }
-
-  useEffect(() => {
-    if (!isResizing) return
-
-    const handleMove = (e: MouseEvent | TouchEvent) => {
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
-      const deltaY = resizeStartY.current - clientY
-      const newHeight = Math.max(lineHeight + 32, resizeStartHeight.current + deltaY)
-      setManualHeight(newHeight)
-    }
-
-    const handleEnd = () => {
-      setIsResizing(false)
-    }
-
-    document.addEventListener('mousemove', handleMove)
-    document.addEventListener('mouseup', handleEnd)
-    document.addEventListener('touchmove', handleMove)
-    document.addEventListener('touchend', handleEnd)
-
-    return () => {
-      document.removeEventListener('mousemove', handleMove)
-      document.removeEventListener('mouseup', handleEnd)
-      document.removeEventListener('touchmove', handleMove)
-      document.removeEventListener('touchend', handleEnd)
-    }
-  }, [isResizing, lineHeight])
-
-  // Get model display name
-  const currentProvider = providers.find((p) => p.id === selectedModel.providerID)
-  const currentModel = currentProvider?.models?.find((m) => m.id === selectedModel.modelID)
-  const modelDisplayName =
-    currentModel?.name ?? selectedModel.modelID.split('-').slice(0, 2).join(' ')
-
   return (
     <div className="relative border-t bg-background">
-      {/* Resize Handle */}
-      <div
-        className={cn(
-          'absolute -top-2 left-1/2 z-10 flex h-4 w-12 -translate-x-1/2 cursor-ns-resize items-center justify-center rounded-full bg-muted opacity-0 transition-opacity hover:opacity-100',
-          isResizing && 'opacity-100',
-        )}
-        onMouseDown={handleResizeStart}
-        onTouchStart={handleResizeStart}
-      >
-        <GripHorizontal className="size-4 text-muted-foreground" />
-      </div>
-
       <div className="mx-auto max-w-4xl p-3 md:p-4">
-        {/* Toolbar */}
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          {/* Model selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7">
-                  <Sparkles className="size-3" />
-                  <span className="max-w-24 truncate">{modelDisplayName}</span>
-                  <ChevronDown className="size-3" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
-              {providers.map((provider) => (
-                <div key={provider.id}>
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                    {provider.name}
-                  </div>
-                  {provider.models.map((model) => (
-                    <DropdownMenuItem
-                      key={model.id}
-                      onClick={() =>
-                        setSelectedModel({ providerID: provider.id, modelID: model.id })
-                      }
-                      className={cn(
-                        selectedModel.providerID === provider.id &&
-                          selectedModel.modelID === model.id &&
-                          'bg-accent',
-                      )}
-                    >
-                      {model.name}
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                </div>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Reasoning level selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7">
-                  <BrainCircuit className="size-3" />
-                  <span className="capitalize">{reasoningLevel}</span>
-                  <ChevronDown className="size-3" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="start">
-              {(['low', 'medium', 'high'] as const).map((level) => (
-                <DropdownMenuItem
-                  key={level}
-                  onClick={() => setReasoningLevel(level)}
-                  className={cn(reasoningLevel === level && 'bg-accent')}
-                >
-                  <span className="capitalize">{level}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Agent selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7">
-                  <Bot className="size-3" />
-                  <span className="capitalize">{selectedAgent}</span>
-                  <ChevronDown className="size-3" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="start">
-              {agents.map((agent) => (
-                <DropdownMenuItem
-                  key={agent.name}
-                  onClick={() => setSelectedAgent(agent.name)}
-                  className={cn(selectedAgent === agent.name && 'bg-accent')}
-                >
-                  <span className="capitalize">{agent.name}</span>
-                  {agent.description && (
-                    <span className="ml-2 text-xs text-muted-foreground">{agent.description}</span>
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
         {/* Input area */}
         <div className="flex items-end gap-2 rounded-xl border bg-card p-3 shadow-sm focus-within:ring-2 focus-within:ring-primary/20">
           <div

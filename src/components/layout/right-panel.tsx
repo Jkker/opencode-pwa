@@ -3,7 +3,7 @@
 
 import { useParams } from '@tanstack/react-router'
 import { FileCode, Terminal, ListTodo, BarChart3 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import type { DiffStyle } from '@/components/diff'
 
@@ -31,11 +31,18 @@ import {
   QueueItemContent,
 } from '@/components/ai-elements/queue'
 import { SessionReview } from '@/components/diff'
+import { TerminalPanel } from '@/components/terminal'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SwipeableTabPanel } from '@/components/ui/swipeable-tab-panel'
-import { useDiffQuery, useSessionQuery, useMessagesQuery } from '@/lib/opencode/queries'
-
-import { ScrollArea } from '../ui/scroll-area'
+import {
+  useDiffQuery,
+  useSessionQuery,
+  useMessagesQuery,
+  useCreatePtyMutation,
+  useRemovePtyMutation,
+  useHealthQuery,
+} from '@/lib/opencode/queries'
+import { terminalStore, type LocalPTY } from '@/stores/terminal-store'
 
 /** Right panel tab IDs */
 export const RIGHT_PANEL_TABS = ['status', 'changes', 'terminal'] as const
@@ -255,41 +262,71 @@ function ChangesTab({ sessionId }: ChangesTabProps) {
   return <SessionReview diffs={diffs} diffStyle={diffStyle} onDiffStyleChange={setDiffStyle} />
 }
 
+const TERMINAL_DIRECTORY = '/'
+
 function TerminalTab() {
-  const [inputValue, setInputValue] = useState('')
-  const [output, setOutput] = useState<string[]>([
-    '$ Welcome to OpenCode Terminal',
-    'Type commands to interact with the server.',
-    '',
-  ])
+  const tabs = terminalStore.useValue('all')
+  const activeId = terminalStore.useValue('active')
+  const { data: health } = useHealthQuery()
 
-  const handleCommand = (command: string) => {
-    if (!command.trim()) return
-    setOutput((prev) => [...prev, `$ ${command}`, '(Terminal integration coming soon)', ''])
-    setInputValue('')
-  }
+  const createPty = useCreatePtyMutation(TERMINAL_DIRECTORY)
+  const removePty = useRemovePtyMutation(TERMINAL_DIRECTORY)
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleCommand(inputValue)
+  const handleAddTerminal = async () => {
+    try {
+      const pty = await createPty.mutateAsync({ title: `Terminal ${tabs.length + 1}` })
+      if (pty) {
+        terminalStore.actions.addTerminal({ id: pty.id, title: pty.title })
+      }
+    } catch (error) {
+      console.error('Failed to create terminal:', error)
     }
   }
 
+  const handleCloseTerminal = async (id: string) => {
+    try {
+      await removePty.mutateAsync(id)
+      terminalStore.actions.removeTerminal(id)
+    } catch (error) {
+      console.error('Failed to close terminal:', error)
+    }
+  }
+
+  const handleSelectTerminal = (id: string) => {
+    terminalStore.actions.setActive(id)
+  }
+
+  const handleUpdateTerminal = (pty: LocalPTY) => {
+    terminalStore.actions.updateTerminal(pty)
+  }
+
+  // Auto-create initial terminal when server becomes available
+  useEffect(() => {
+    if (tabs.length === 0 && health) {
+      void handleAddTerminal()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run on health status change
+  }, [health])
+
+  if (!health) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+        <Terminal className="size-8" />
+        <p className="text-sm">Server disconnected</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-black text-green-400">
-      <ScrollArea className="min-h-0 w-full flex-1 p-2">
-        <pre className="w-full whitespace-pre-wrap font-mono text-xs">{output.join('\n')}</pre>
-        <div className="flex w-full items-center gap-1 font-mono text-xs">
-          <span className="text-cyan-400">$</span>
-          <input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="min-w-0 flex-1 bg-transparent outline-none"
-            placeholder="Type a command..."
-          />
-        </div>
-      </ScrollArea>
-    </div>
+    <TerminalPanel
+      tabs={tabs}
+      activeId={activeId}
+      directory={TERMINAL_DIRECTORY}
+      onSelect={handleSelectTerminal}
+      onClose={handleCloseTerminal}
+      onAdd={handleAddTerminal}
+      onUpdateTerminal={handleUpdateTerminal}
+      className="h-full w-full"
+    />
   )
 }

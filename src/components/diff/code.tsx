@@ -1,11 +1,10 @@
 'use client'
 
 import type { FileContents, FileOptions, LineAnnotation } from '@pierre/diffs/react'
-import type { CSSProperties, ReactNode } from 'react'
 
 import { File } from '@pierre/diffs/react'
 
-import { createDefaultOptions, styleVariables } from '@/lib/pierre'
+import { useDiffsOptions } from '@/lib/pierre'
 import { cn } from '@/lib/utils'
 
 export interface CodeProps<T = undefined> {
@@ -16,11 +15,9 @@ export interface CodeProps<T = undefined> {
   /** Line annotations */
   annotations?: LineAnnotation<T>[]
   /** Render function for annotations */
-  renderAnnotation?: (annotation: LineAnnotation<T>) => ReactNode
+  renderAnnotation?: (annotation: LineAnnotation<T>) => React.ReactNode
   /** Additional class name */
   className?: string
-  /** Additional inline styles */
-  style?: CSSProperties
   /** Prerendered HTML for SSR hydration */
   prerenderedHTML?: string
 }
@@ -36,33 +33,20 @@ export interface CodeProps<T = undefined> {
  * />
  * ```
  */
-export function Code<T = undefined>({
+export const Code = <T = undefined>({
   file,
   options,
   annotations,
   renderAnnotation,
   className,
-  style,
   prerenderedHTML,
-}: CodeProps<T>) {
-  const mergedOptions = {
-    ...createDefaultOptions('unified'),
-    ...options,
-  }
-
-  return (
-    <div
-      data-component="code"
-      className={cn('overflow-auto', className)}
-      style={{ ...styleVariables, ...style }}
-    >
-      <File<T>
-        file={file}
-        options={mergedOptions}
-        lineAnnotations={annotations}
-        renderAnnotation={renderAnnotation}
-        prerenderedHTML={prerenderedHTML}
-      />
-    </div>
-  )
-}
+}: CodeProps<T>) => (
+  <File<T>
+    className={cn('overflow-auto', className)}
+    file={file}
+    options={useDiffsOptions({ ...options })}
+    lineAnnotations={annotations}
+    renderAnnotation={renderAnnotation}
+    prerenderedHTML={prerenderedHTML}
+  />
+)

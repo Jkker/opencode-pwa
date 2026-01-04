@@ -24,7 +24,6 @@ import { Drawer } from 'vaul'
 
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useSelectedModel } from '@/hooks/use-selected-model'
 import { useClient } from '@/lib/opencode/client'
 import { useSendPromptMutation, useAbortSessionMutation } from '@/lib/opencode/queries'
 import { cn } from '@/lib/utils'
@@ -321,9 +320,7 @@ function CodeMirrorEditor({
     }
   }, [value])
 
-  return (
-    <div ref={containerRef} className={cn('min-h-[44px] max-h-[200px] overflow-auto', className)} />
-  )
+  return <div ref={containerRef} className={cn('min-h-11 max-h-50 overflow-auto', className)} />
 }
 
 // Main Prompt Input Component
@@ -342,14 +339,12 @@ export function PromptInput({
   const client = useClient(directory)
   const sendPrompt = useSendPromptMutation()
   const abortSession = useAbortSessionMutation()
-  const autoAcceptEdits = settingStore.useState('autoAcceptEdits')
   const isMobile = useIsMobile()
 
-  // Use hooks for model/agent selection from persistent store
-  const { selectedModel, selectedVariant, setModel, setVariant, displayName } = useSelectedModel()
-  const selectedAgent = settingStore.useValue('selectedAgent')
-  const setSelectedAgent = settingStore.actions.setSelectedAgent
-
+  const [autoAcceptEdits, setAutoAcceptEdits] = settingStore.useState('autoAcceptEdits')
+  const [agent, setAgent] = settingStore.useState('selectedAgent')
+  const [model, setModel] = settingStore.useState('selectedModel')
+  const [variant, setVariant] = settingStore.useState('selectedVariant')
   const isWorking = sendPrompt.isPending
   const canSend = value.trim().length > 0 && !isWorking
   const isShellCommand = value.trim().startsWith('!')
@@ -400,9 +395,9 @@ export function PromptInput({
       sessionId,
       messageId: `msg_${Date.now()}`,
       text: isShellCommand ? `Run this shell command: ${actualText}` : actualText,
-      agent: selectedAgent,
-      model: selectedModel,
-      variant: selectedVariant,
+      agent,
+      model,
+      variant,
     })
   }
 
