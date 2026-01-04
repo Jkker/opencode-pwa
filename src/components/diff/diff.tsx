@@ -1,11 +1,10 @@
 'use client'
 
 import type { DiffLineAnnotation, FileContents, BaseDiffOptions } from '@pierre/diffs/react'
-import type { CSSProperties, ReactNode } from 'react'
 
 import { MultiFileDiff } from '@pierre/diffs/react'
 
-import { createDefaultOptions, styleVariables, type DiffStyle } from '@/lib/pierre'
+import { useDiffsOptions, type DiffStyle } from '@/lib/pierre'
 import { cn } from '@/lib/utils'
 
 export interface DiffProps<T = undefined> {
@@ -20,11 +19,9 @@ export interface DiffProps<T = undefined> {
   /** Line annotations */
   annotations?: DiffLineAnnotation<T>[]
   /** Render function for annotations */
-  renderAnnotation?: (annotation: DiffLineAnnotation<T>) => ReactNode
+  renderAnnotation?: (annotation: DiffLineAnnotation<T>) => React.ReactNode
   /** Additional class name */
   className?: string
-  /** Additional inline styles */
-  style?: CSSProperties
   /** Prerendered HTML for SSR hydration */
   prerenderedHTML?: string
 }
@@ -42,7 +39,7 @@ export interface DiffProps<T = undefined> {
  * />
  * ```
  */
-export function Diff<T = undefined>({
+export const Diff = <T = undefined>({
   before,
   after,
   diffStyle = 'unified',
@@ -50,33 +47,22 @@ export function Diff<T = undefined>({
   annotations,
   renderAnnotation,
   className,
-  style,
   prerenderedHTML,
-}: DiffProps<T>) {
-  // Build options compatible with FileDiffOptions
-  const diffOptions = {
-    ...createDefaultOptions(diffStyle),
-    ...options,
-    // Exclude hunkSeparators to avoid type conflicts
-    hunkSeparators: undefined,
-  }
-
-  return (
-    <div
-      data-component="diff"
-      className={cn('overflow-auto', className)}
-      style={{ ...styleVariables, ...style }}
-    >
-      <MultiFileDiff<T>
-        oldFile={before}
-        newFile={after}
-        options={diffOptions}
-        lineAnnotations={annotations}
-        renderAnnotation={renderAnnotation}
-        prerenderedHTML={prerenderedHTML}
-      />
-    </div>
-  )
-}
+}: DiffProps<T>) => (
+  <MultiFileDiff<T>
+    className={cn('overflow-auto', className)}
+    oldFile={before}
+    newFile={after}
+    options={useDiffsOptions({
+      ...options,
+      diffStyle,
+      // Exclude hunkSeparators to avoid type conflicts
+      hunkSeparators: undefined,
+    })}
+    lineAnnotations={annotations}
+    renderAnnotation={renderAnnotation}
+    prerenderedHTML={prerenderedHTML}
+  />
+)
 
 export type { DiffStyle }
