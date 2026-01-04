@@ -7,6 +7,7 @@ import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useSwipeDrawer } from '@/hooks/use-swipe-drawer'
 
 import { LeftPanel } from './left-panel'
 import { PromptPanel } from './prompt-panel'
@@ -44,12 +45,36 @@ export function HolyGrailLayout({
   }
 
   /**
+   * Handle opening the left panel.
+   * On mobile, this is triggered by swipe LTR when panel is closed.
+   */
+  const handleOpenLeftPanel = () => {
+    setLeftOpen(true)
+  }
+
+  /**
    * Handle closing the right panel.
    * On mobile, this is triggered by swipe LTR when on first tab.
    */
   const handleCloseRightPanel = () => {
     setRightOpen(false)
   }
+
+  // Enable global swipe gestures on mobile to open/close drawers
+  // Only respond to swipes when both drawers are closed to avoid conflicts
+  useSwipeDrawer({
+    onSwipeLeft: () => {
+      if (!rightOpen && !leftOpen) {
+        handleOpenRightPanel()
+      }
+    },
+    onSwipeRight: () => {
+      if (!leftOpen && !rightOpen) {
+        handleOpenLeftPanel()
+      }
+    },
+    enabled: isMobile,
+  })
 
   return (
     <div className="flex h-dvh bg-background">
