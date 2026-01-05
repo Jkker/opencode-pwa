@@ -24,6 +24,8 @@ export interface AgentPart extends PartBase {
   name: string
 }
 
+// ImageAttachmentPart doesn't extend PartBase because attachments are stored
+// separately from text content and don't have position info in the input
 export interface ImageAttachmentPart {
   type: 'image'
   id: string

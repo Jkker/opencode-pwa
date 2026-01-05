@@ -15,10 +15,10 @@ vi.mock('@/lib/opencode/client', () => ({
       shell: vi.fn().mockResolvedValue({ data: {} }),
       command: vi.fn().mockResolvedValue({ data: {} }),
     },
-    provider: {
-      list: vi.fn().mockResolvedValue({ data: { all: [], default: {}, connected: [] } }),
+    config: {
+      providers: vi.fn().mockResolvedValue({ data: { all: [], default: {}, connected: [] } }),
     },
-    agent: { list: vi.fn().mockResolvedValue({ data: [] }) },
+    app: { agents: vi.fn().mockResolvedValue({ data: [] }) },
   }),
 }))
 
