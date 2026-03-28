@@ -469,3 +469,124 @@ export function useRemovePtyMutation(directory: string) {
     },
   })
 }
+
+// Providers
+export function useProvidersQuery() {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient()
+
+  return useQuery({
+    queryKey: queryKeys.providers(url),
+    queryFn: async () => {
+      try {
+        const result = await client.config.providers()
+        return (result.data ?? { all: [], default: {}, connected: [] }) as ProvidersResponse
+      } catch {
+        return { all: [], default: {}, connected: [] } as ProvidersResponse
+      }
+    },
+    retry: false,
+  })
+}
+
+// Agents
+export function useAgentsQuery(directory: string | undefined) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+
+  return useQuery({
+    queryKey: queryKeys.agents(url, directory ?? ''),
+    queryFn: async () => {
+      if (!directory) return []
+      try {
+        const result = await client.app.agents()
+        return (result.data ?? []) as Agent[]
+      } catch {
+        return []
+      }
+    },
+    enabled: !!directory,
+    retry: false,
+  })
+}
+
+// File search
+export function useFileSearchQuery(directory: string | undefined, query: string) {
+  const url = settingStore.useValue('serverURL')
+  const client = useClient(directory)
+
+  return useQuery({
+    queryKey: ['opencode', 'files', url, directory, query] as const,
+    queryFn: async () => {
+      if (!directory || query.length < 1) return []
+      try {
+        const result = await client.find.files({ query, limit: 20 })
+        return result.data ?? []
+      } catch {
+        return []
+      }
+    },
+    enabled: !!directory && query.length >= 1,
+    staleTime: 5000,
+  })
+}
+
+// Shell command mutation
+export function useShellCommandMutation() {
+  const client = useClient()
+
+  return useMutation({
+    mutationFn: async ({
+      sessionId,
+      command,
+      agent,
+      model,
+    }: {
+      sessionId: string
+      command: string
+      agent: string
+      model: { providerID: string; modelID: string }
+    }) => {
+      const result = await client.session.shell({
+        sessionID: sessionId,
+        agent,
+        model,
+        command,
+      })
+      return result.data
+    },
+  })
+}
+
+// Custom command mutation
+export function useCustomCommandMutation() {
+  const client = useClient()
+
+  return useMutation({
+    mutationFn: async ({
+      sessionId,
+      command,
+      args,
+      agent,
+      model,
+      variant,
+    }: {
+      sessionId: string
+      command: string
+      args: string
+      agent: string
+      model: string
+      variant?: string
+    }) => {
+      const result = await client.session.command({
+        sessionID: sessionId,
+        command,
+        arguments: args,
+        agent,
+        model,
+        variant,
+      })
+      return result.data
+    },
+  })
+}
